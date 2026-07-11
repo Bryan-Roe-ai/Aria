@@ -19,6 +19,20 @@ def test_codeql_workflow_ignores_issue_template_changes() -> None:
 
 
 @pytest.mark.unit
+def test_codeql_c_cpp_uses_buildless_mode() -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    c_cpp_entry = next(
+        entry for entry in workflow["jobs"]["analyze"]["strategy"]["matrix"]["include"] if entry["language"] == "c-cpp"
+    )
+
+    assert c_cpp_entry["build-mode"] == "none", (
+        "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+    )
+
+
+@pytest.mark.unit
 def test_codeql_autofix_ref_step_avoids_unbound_shell_vars() -> None:
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
     content = workflow_path.read_text(encoding="utf-8")

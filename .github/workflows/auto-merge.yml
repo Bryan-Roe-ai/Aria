@@ -3,24 +3,17 @@
 # =============================================================================
 # Purpose:
 #   • enable             — arms GitHub native auto-merge when `auto-merge` or
-#                          `autofix` label is added; posts an informational
-#                          comment explaining what must pass before merge fires.
+#                          `autofix` label is present on a same-repo PR.
 #   • disable            — disables native auto-merge when the last matching
 #                          label is removed.
-#   • merge-on-gate-pass — fires when `Merge Gate / All Gates Passed` check
-#                          succeeds; for each associated PR with the label and
-#                          a clean eligibility check, calls the merge API.
-#   • bot-approve        — if the `AUTO_MERGE_BOT_APPROVE` repository variable
-#                          is 'true', approves PRs authored by bot accounts in
-#                          BOT_APPROVE_ALLOWLIST using a dedicated PAT so they
-#                          clear the required-reviewer gate. Human-authored PRs
-#                          always require a real human approval.
+#   • merge-on-gate-pass — when the `All Gates Passed` check succeeds, evaluates
+#                          associated PRs and merges eligible labeled PRs.
+#   • bot-approve        — optionally approves allowlisted bot-authored PRs
+#                          using a dedicated PAT from a different identity.
 #
-# Merge strategy : squash (consistent with dependabot-automerge.yml).
-# Fork PRs       : always skipped — GITHUB_TOKEN is read-only for forks.
-# Defaults       : clarifying-question defaults used where not explicitly set:
-#                  bot-approve scope = bot actors only; merge strategy = squash;
-#                  fork PRs = skip; merge queue = enabled in ruleset JSON.
+# Merge strategy : squash
+# Fork PRs       : skipped
+# Security       : least-privilege job permissions; no embedded credentials
 # =============================================================================
 
 name: Auto Merge
@@ -31,14 +24,10 @@ on:
   check_run:
     types: [completed]
 
-# Use PR number for pull_request events; check_run ID for check_run events.
-# cancel-in-progress: false prevents a late enable/disable from clobbering a
-# concurrent merge attempt.
 concurrency:
   group: >-
     auto-merge-${{
-      github.event.pull_request.number
-      || github.event.check_run.id
+      github.event.pull_request.number || github.event.check_run.id
     }}
   cancel-in-progress: false
 
@@ -46,19 +35,9 @@ permissions:
   contents: read
 
 env:
-  AUTO_MERGE_LABEL: auto-merge
-  AUTOFIX_LABEL: autofix
-  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # step-security/harden-runner v2.12.2
-  GITHUB_SCRIPT_SHA: 60a0d83039c74a4aee543508d2ffcb1c3799cdea  # actions/github-script v7.0.1
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  # Space-separated list of bot login names eligible for automated approval.
-  # Only used when AUTO_MERGE_BOT_APPROVE variable == 'true'.
   BOT_APPROVE_ALLOWLIST: "github-actions[bot] copilot-swe-agent[bot]"
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # Job A — Arm GitHub native auto-merge when a label is added
-  # ---------------------------------------------------------------------------
   enable:
     name: Enable Auto-Merge
     if: >-
@@ -122,17 +101,10 @@ jobs:
           gh pr comment "$PR_NUMBER" --body \
             "🤖 **Auto-merge armed** (label: \`${LABEL}\`)
 
-          This PR will be squash-merged automatically once all of the following are true:
-          - ✅ \`Merge Gate / All Gates Passed\` check succeeds
-          - ✅ Required reviewer approval is obtained
-          - ✅ No unresolved review threads remain
-          - ✅ No merge conflicts
+          This PR is configured for squash auto-merge and will merge once GitHub's repository merge requirements are satisfied, including required checks, approvals, mergeability, and any branch protection or ruleset requirements.
 
           Remove the \`auto-merge\` or \`autofix\` label to cancel."
 
-  # ---------------------------------------------------------------------------
-  # Job B — Disable auto-merge when the last matching label is removed
-  # ---------------------------------------------------------------------------
   disable:
     name: Disable Auto-Merge
     if: >-
@@ -163,9 +135,6 @@ jobs:
           set -euo pipefail
           gh pr merge --disable-auto "$PR_NUMBER" || echo "Auto-merge was already disabled."
 
-  # ---------------------------------------------------------------------------
-  # Job C — Merge labeled PRs when the canonical merge gate passes
-  # ---------------------------------------------------------------------------
   merge-on-gate-pass:
     name: Merge on Gate Pass
     if: >-
@@ -176,14 +145,14 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-      pull-requests: write
       issues: write
+      pull-requests: write
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
-          egress-policy: audit
           disable-sudo: true
+          egress-policy: audit
 
       - name: Merge eligible PRs
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
@@ -199,105 +168,56 @@ jobs:
             }
 
             const summaryRows = [];
+            const thisRepo = context.payload.repository.full_name;
 
             for (const pr of prs) {
               const prNumber = pr.number;
               core.info(`Evaluating PR #${prNumber} for auto-merge.`);
 
-              // Fetch full PR data (labels, state, merge flags, head repo).
               const { data: prData } = await github.rest.pulls.get({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: prNumber,
               });
 
-              // --- Eligibility checks ---
+              const labelNames = prData.labels.map((label) => label.name);
+              const hasAutoMergeLabel =
+                labelNames.includes('auto-merge') || labelNames.includes('autofix');
 
-              const labelNames = prData.labels.map(l => l.name);
-              const hasLabel = labelNames.includes('auto-merge') || labelNames.includes('autofix');
-              if (!hasLabel) {
-                core.info(`PR #${prNumber}: no auto-merge/autofix label — skipping.`);
+              if (!hasAutoMergeLabel) {
+                core.info(`PR #${prNumber}: missing auto-merge label.`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (no label) |`);
                 continue;
               }
 
               if (prData.draft) {
-                core.info(`PR #${prNumber}: draft — skipping.`);
+                core.info(`PR #${prNumber}: draft.`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (draft) |`);
                 continue;
               }
 
               if (prData.state !== 'open') {
-                core.info(`PR #${prNumber}: not open (${prData.state}) — skipping.`);
+                core.info(`PR #${prNumber}: not open (${prData.state}).`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (${prData.state}) |`);
                 continue;
               }
 
-              // Guard against fork PRs — GITHUB_TOKEN cannot merge across forks.
-              // prData.head.repo is null when the fork has been deleted.
-              const thisRepo = context.payload.repository.full_name;
               if (!prData.head.repo || prData.head.repo.full_name !== thisRepo) {
                 const headRepo = prData.head.repo ? prData.head.repo.full_name : '(deleted fork)';
-                core.info(`PR #${prNumber}: fork or deleted-fork PR (${headRepo}) — skipping.`);
+                core.info(`PR #${prNumber}: fork/deleted fork (${headRepo}).`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (fork) |`);
                 continue;
               }
 
-              // mergeable can be null (still calculating) or false (conflict/behind).
-              // Only proceed when explicitly true to avoid merging in an unknown state.
-              if (prData.mergeable !== true) {
-                if (prData.mergeable === false) {
-                  core.info(`PR #${prNumber}: not mergeable (conflicts or branch behind) — skipping.`);
-                  summaryRows.push(`| #${prNumber} | ❌ not mergeable |`);
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: prNumber,
-                    body: '⚠️ Auto-merge gate passed but the PR cannot be merged (merge conflict or branch behind base). Please resolve conflicts and re-run checks.',
-                  });
-                } else {
-                  // null — GitHub is still calculating mergeability; skip this run.
-                  core.info(`PR #${prNumber}: mergeability unknown (still calculating) — skipping.`);
-                  summaryRows.push(`| #${prNumber} | ⏳ mergeability pending |`);
-                }
+              const mergeable = prData.mergeable;
+              const mergeableState = prData.mergeable_state || 'unknown';
+
+              if (mergeable !== true || mergeableState !== 'clean') {
+                core.info(`PR #${prNumber}: blocked (${mergeableState}).`);
+                summaryRows.push(`| #${prNumber} | ⏳ blocked (${mergeableState}) |`);
                 continue;
               }
 
-              // Check for blocking/approved reviews.
-              const { data: reviews } = await github.rest.pulls.listReviews({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-              });
-
-              // Build latest review state per reviewer (COMMENTED doesn't update decision).
-              // Sort by submission time to ensure later reviews overwrite earlier ones.
-              const sortedReviews = [...reviews].sort(
-                (a, b) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
-              );
-              const latestByReviewer = {};
-              for (const review of sortedReviews) {
-                if (review.state !== 'COMMENTED') {
-                  latestByReviewer[review.user.login] = review.state;
-                }
-              }
-              const reviewStates = Object.values(latestByReviewer);
-              const hasChangesRequested = reviewStates.some(s => s === 'CHANGES_REQUESTED');
-              const hasApproval = reviewStates.some(s => s === 'APPROVED');
-
-              if (hasChangesRequested) {
-                core.info(`PR #${prNumber}: CHANGES_REQUESTED review present — skipping.`);
-                summaryRows.push(`| #${prNumber} | ❌ changes requested |`);
-                continue;
-              }
-
-              if (!hasApproval) {
-                core.info(`PR #${prNumber}: no approved review yet — skipping.`);
-                summaryRows.push(`| #${prNumber} | ⏳ awaiting approval |`);
-                continue;
-              }
-
-              // Attempt the squash merge.
               try {
                 await github.rest.pulls.merge({
                   owner: context.repo.owner,
@@ -305,37 +225,40 @@ jobs:
                   pull_number: prNumber,
                   merge_method: 'squash',
                 });
+
                 core.info(`✅ Merged PR #${prNumber}.`);
                 summaryRows.push(`| #${prNumber} | ✅ merged |`);
+
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: prNumber,
-                  body: '✅ Auto-merged via `Merge Gate / All Gates Passed` gate.',
+                  body: '✅ Auto-merged after `All Gates Passed` succeeded and the PR was in a clean mergeable state.',
                 });
               } catch (err) {
-                core.error(`Failed to merge PR #${prNumber}: ${err}`);
-                summaryRows.push(`| #${prNumber} | ❌ merge failed — ${err.message} |`);
+                const message = err instanceof Error ? err.message : String(err);
+                core.error(`Failed to merge PR #${prNumber}: ${message}`);
+                summaryRows.push(`| #${prNumber} | ❌ merge failed — ${message} |`);
+
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: prNumber,
-                  body: `❌ Auto-merge failed: ${err.message}`,
+                  body: `❌ Auto-merge failed: ${message}`,
                 });
               }
             }
 
-            // Write step summary.
             const tableHeader = '| PR | Result |\n|-----|--------|';
-            const tableBody = summaryRows.length ? summaryRows.join('\n') : '| — | _No PRs evaluated._ |';
+            const tableBody = summaryRows.length
+              ? summaryRows.join('\n')
+              : '| — | _No PRs evaluated._ |';
+
             await core.summary
               .addHeading('Auto-Merge Results', 2)
               .addRaw(`${tableHeader}\n${tableBody}`)
               .write();
 
-  # ---------------------------------------------------------------------------
-  # Job D — Approve bot-authored PRs (gated by AUTO_MERGE_BOT_APPROVE variable)
-  # ---------------------------------------------------------------------------
   bot-approve:
     name: Bot-Approve PR
     if: >-
@@ -363,17 +286,17 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         env:
           BOT_APPROVE_ALLOWLIST: ${{ env.BOT_APPROVE_ALLOWLIST }}
-          # AUTO_MERGE_APPROVE_TOKEN must be a PAT with pull-requests:write scope
-          # issued by an identity different from the PR author so the approval
-          # is not self-approved. GITHUB_TOKEN cannot approve its own PRs.
           HAS_APPROVE_TOKEN: ${{ secrets.AUTO_MERGE_APPROVE_TOKEN != '' }}
         with:
           github-token: ${{ secrets.AUTO_MERGE_APPROVE_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
-            const allowlist = (process.env.BOT_APPROVE_ALLOWLIST || '').split(/\s+/).filter(Boolean);
-            const author = context.payload.pull_request.user.login;
+            const allowlist = (process.env.BOT_APPROVE_ALLOWLIST || '')
+              .split(/\s+/)
+              .filter(Boolean);
 
-            const isAllowed = allowlist.some(entry => entry === author);
+            const author = context.payload.pull_request.user.login;
+            const isAllowed = allowlist.includes(author);
+
             if (!isAllowed) {
               core.info(`PR author '${author}' is not in BOT_APPROVE_ALLOWLIST; skipping.`);
               return;
@@ -383,7 +306,7 @@ jobs:
             if (!hasToken) {
               core.warning(
                 'AUTO_MERGE_APPROVE_TOKEN secret is not set. ' +
-                'A dedicated PAT is required to approve PRs from a separate identity. ' +
+                'A dedicated PAT from a separate identity is required for bot approval. ' +
                 'Skipping bot-approve.'
               );
               return;
@@ -391,13 +314,13 @@ jobs:
 
             const prNumber = context.payload.pull_request.number;
 
-            // Check if already approved to avoid duplicate review events.
             const { data: reviews } = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber,
             });
-            const alreadyApproved = reviews.some(r => r.state === 'APPROVED');
+
+            const alreadyApproved = reviews.some((review) => review.state === 'APPROVED');
             if (alreadyApproved) {
               core.info(`PR #${prNumber} already has an approval; skipping.`);
               return;
@@ -410,4 +333,5 @@ jobs:
               event: 'APPROVE',
               body: `🤖 Automated approval for bot-authored PR (author: @${author}).`,
             });
+
             core.info(`✅ Approved PR #${prNumber} (author: ${author}).`);

@@ -4,7 +4,7 @@
 #
 # Tuned for MAXIMUM security signal with INTEGRATED AUTOFIX:
 #   - All repo languages covered (Python, JS/TS, GitHub Actions; C/C++ via
-#     manual build when present). HTML is analyzed as part of
+#     buildless analysis). HTML is analyzed as part of
 #     javascript-typescript.
 #   - Query packs: security-extended + security-and-quality + experimental
 #     security queries, plus community security packs (when available).
@@ -27,6 +27,48 @@
 #       3. A `dependency-review` job blocks PRs that introduce vulnerable
 #          dependencies.
 
+name: 'CodeQL'
+
+on:
+  pull_request:
+    branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
+      - 'LICENSE'
+      - 'CODEOWNERS'
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+  push:
+    branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.rst'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE/**'
+      - 'LICENSE'
+      - 'CODEOWNERS'
+  schedule:
+    - cron: '36 23 * * 1'
+    - cron: '36 23 * * 4'
+  workflow_dispatch:
+    inputs:
+      allow_unsafe_fixes:
+        default: true
+        description: 'Allow potentially unsafe autofixes (e.g. ruff --unsafe-fixes) on scheduled/manual runs only'
+        type: boolean
+      open_autofix_pr:
+        default: true
+        description: 'Open a PR with autofix results (scheduled/manual runs)'
+        type: boolean
+      run_autofix:
+        default: true
+        description: 'Run language-native autofixers and push results'
+        type: boolean
+
 concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
   group: codeql-${{ github.workflow }}-${{ (github.event_name == 'pull_request' && github.head_ref) || github.ref }}
@@ -41,12 +83,14 @@ env:
   CODEQL_ACTION_SHA: 4e828ff8d448a8a6e532957b1811f387a63867e8
   CREATE_PR_SHA: 67ccf781d68cd99b580ae25a5c18a1cc84ffff1f
   DEPENDENCY_REVIEW_SHA: da24556b548a50705dd671f47852072ea4c105d9
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
   RUFF_VERSION: '>=0.6,<1.0'
   SETUP_NODE_SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
   SETUP_PYTHON_SHA: a26af69be951a213d495a4c3e4e4022e16d87065
   UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+
+permissions:
+  contents: read
 
 jobs:
   analyze:
@@ -57,6 +101,27 @@ jobs:
       packages: read
       security-events: write
     runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+            os: ubuntu-latest
+
+          - language: javascript-typescript
+            build-mode: none
+            os: ubuntu-latest
+
+          - language: python
+            build-mode: none
+            os: ubuntu-latest
+
+          - language: c-cpp
+            build-mode: none
+            os: ubuntu-latest
+            timeout-minutes: 360
+    timeout-minutes: 360
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
@@ -69,10 +134,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8
+        uses: github/codeql-action/init@v3
         with:
           build-mode: ${{ matrix.build-mode }}
           config-file: ./.github/codeql/codeql-config.yml
@@ -80,7 +144,7 @@ jobs:
 
       - id: analyze
         name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@4e828ff8d448a8a6e532957b1811f387a63867e8
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:${{ matrix.language }}'
           output: ${{ runner.temp }}/sarif-${{ matrix.language }}
@@ -95,36 +159,20 @@ jobs:
           name: codeql-sarif-${{ matrix.language }}
           path: ${{ runner.temp }}/sarif-${{ matrix.language }}
           retention-days: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - build-mode: none
-            language: actions
-            os: ubuntu-latest
-          - build-mode: none
-            language: javascript-typescript
-            os: ubuntu-latest
-          - build-mode: none
-            language: python
-            os: ubuntu-latest
-          - build-mode: none
-            language: c-cpp
-            os: ubuntu-latest
-    timeout-minutes: 360
 
   autofix:
     if: >-
       (github.event_name == 'pull_request' ||
-       github.event_name == 'push' ||
-       github.event_name == 'schedule' ||
-       (github.event_name == 'workflow_dispatch' && inputs.run_autofix))
+      github.event_name == 'push' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_autofix))
     name: Auto-fix (lint / format)
     needs: analyze
     permissions:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
@@ -182,7 +230,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Cache pip
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
@@ -290,7 +338,7 @@ jobs:
               "!**/third-party/**" \
               "!**/datasets/**" \
               "!**/*.min.*" \
-                "!**/.github/workflows/**" || true
+              "!**/.github/workflows/**" || true
           fi
 
       - continue-on-error: true
@@ -355,7 +403,7 @@ jobs:
 
       - if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && steps.ref.outputs.can_push == 'false'
         name: Comment patch link on fork PR
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@v7
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -435,7 +483,6 @@ jobs:
           sign-commits: false
           title: 'style: automated autofixes from CodeQL workflow'
           token: ${{ secrets.GITHUB_TOKEN }}
-    timeout-minutes: 20
 
   copilot-autofix-summary:
     if: github.event_name == 'pull_request'
@@ -446,6 +493,7 @@ jobs:
       pull-requests: write
       security-events: read
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
@@ -539,7 +587,6 @@ jobs:
                 body,
               });
             }
-    timeout-minutes: 10
 
   dependency-review:
     if: github.event_name == 'pull_request'
@@ -548,6 +595,7 @@ jobs:
       contents: read
       pull-requests: write
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
@@ -589,49 +637,3 @@ jobs:
         name: Skip dependency review (no relevant files changed)
         run: |
           echo "No dependency files modified; skipping Dependency Review."
-    timeout-minutes: 10
-
-name: 'CodeQL Advanced'
-
-on:
-  pull_request:
-    branches: ['main']
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.rst'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/PULL_REQUEST_TEMPLATE/**'
-      - 'LICENSE'
-      - 'CODEOWNERS'
-    types: [opened, reopened, synchronize, ready_for_review, edited]
-  push:
-    branches: ['main']
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.rst'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/PULL_REQUEST_TEMPLATE/**'
-      - 'LICENSE'
-      - 'CODEOWNERS'
-  schedule:
-    - cron: '36 23 * * 1'
-    - cron: '36 23 * * 4'
-  workflow_dispatch:
-    inputs:
-      allow_unsafe_fixes:
-        default: false
-        description: 'Allow potentially unsafe autofixes (e.g. ruff --unsafe-fixes) on scheduled/manual runs only'
-        type: boolean
-      open_autofix_pr:
-        default: true
-        description: 'Open a PR with autofix results (scheduled/manual runs)'
-        type: boolean
-      run_autofix:
-        default: true
-        description: 'Run language-native autofixers and push results'
-        type: boolean
-
-permissions:
-  contents: read
