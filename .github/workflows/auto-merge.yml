@@ -22,7 +22,11 @@
 # =============================================================================
 
 name: Auto Merge
-on: # yamllint disable-line rule:truthy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+  merge_group:
   check_run:
     types: [completed]
   pull_request:
@@ -448,5 +452,148 @@ on: # yamllint disable-line rule:truthy
         required: false
         type: number
 
-permissions:
-  contents: read
+            core.info(`Approved PR #${prNumber}.`);
+
+  finish-open-prs:
+    name: Finish Open PRs
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
+
+      - name: Merge eligible open PRs
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        env:
+          AUTO_MERGE_LABELS: ${{ env.AUTO_MERGE_LABELS }}
+          MAX_PRS: ${{ inputs.max_prs || '20' }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const autoMergeLabels = new Set((process.env.AUTO_MERGE_LABELS || '').split(/\s+/).filter(Boolean));
+            // MAX_PRS and DRY_RUN are pre-defaulted via GitHub expression (inputs.max_prs || '20', etc.)
+            const maxPRs = parseInt(process.env.MAX_PRS, 10);
+            const dryRun = process.env.DRY_RUN === 'true';
+            const thisRepo = context.payload.repository.full_name;
+            const summaryRows = [];
+            let mergedCount = 0;
+
+            function latestReviewStates(reviews) {
+              const latestByUser = new Map();
+              for (const r of reviews || []) {
+                const login = r.user?.login;
+                if (!login) continue;
+                const ts = Date.parse(r.submitted_at || r.updated_at || '') || 0;
+                const prev = latestByUser.get(login);
+                if (!prev || ts >= prev.ts) latestByUser.set(login, { state: r.state, ts });
+              }
+              return [...latestByUser.values()].map((x) => x.state);
+            }
+
+            const { data: openPRs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: Math.min(maxPRs, 100),
+            });
+
+            if (!openPRs.length) {
+              core.info('No open pull requests found; skipping.');
+              return;
+            }
+
+            for (const prData of openPRs.slice(0, maxPRs)) {
+              const prNumber = prData.number;
+
+              const labelNames = (prData.labels || []).map((label) => label.name);
+              const hasAutoMergeLabel = labelNames.some((n) => autoMergeLabels.has(n));
+              if (!hasAutoMergeLabel) {
+                summaryRows.push(`| #${prNumber} | ⊘ skipped (no label) |`);
+                continue;
+              }
+
+              if (prData.draft) {
+                summaryRows.push(`| #${prNumber} | ⊘ skipped (draft) |`);
+                continue;
+              }
+
+              if (!prData.head.repo || prData.head.repo.full_name !== thisRepo) {
+                summaryRows.push(`| #${prNumber} | ⊘ skipped (fork) |`);
+                continue;
+              }
+
+              const { data: fullPR } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              const reviewStates = latestReviewStates(reviews);
+              if (reviewStates.includes('CHANGES_REQUESTED')) {
+                summaryRows.push(`| #${prNumber} | ⊘ skipped (changes requested) |`);
+                continue;
+              }
+
+              const mergeable = fullPR.mergeable;
+              const mergeableState = fullPR.mergeable_state || 'unknown';
+              if (mergeable !== true || mergeableState !== 'clean') {
+                summaryRows.push(`| #${prNumber} | ⏳ blocked (${mergeableState}) |`);
+                continue;
+              }
+
+              if (dryRun) {
+                summaryRows.push(`| #${prNumber} | 🔍 eligible (dry-run) |`);
+                continue;
+              }
+
+              try {
+                await github.rest.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  merge_method: 'squash',
+                });
+                mergedCount += 1;
+                summaryRows.push(`| #${prNumber} | ✅ merged |`);
+              } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                summaryRows.push(`| #${prNumber} | ❌ merge failed — ${message} |`);
+                try {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: `❌ Scheduled auto-merge failed: ${message}`,
+                  });
+                } catch (commentErr) {
+                  core.warning(`PR #${prNumber}: failure comment failed: ${String(commentErr)}`);
+                }
+              }
+            }
+
+            const header = '| PR  | Result |\n|-----|--------|';
+            const body = summaryRows.length ? summaryRows.join('\n') : '| — | _No open PRs reviewed._ |';
+
+            await core.summary
+              .addHeading('Finish Open PRs Results', 2)
+              .addRaw(`${header}\n${body}`)
+              .addRaw(`\n\nMerged: ${mergedCount}${dryRun ? ' (dry-run)' : ''}`)
+              .write();
+    timeout-minutes: 15
