@@ -1,8 +1,53 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/npm-shrinkwrap.json'
+      - '**/yarn.lock'
+      - '**/pnpm-lock.yaml'
+      - '**/pyproject.toml'
+      - '**/poetry.lock'
+      - '**/requirements.txt'
+      - '**/requirements-*.txt'
+      - '**/Pipfile'
+      - '**/Pipfile.lock'
+      - '**/setup.py'
+      - '**/go.mod'
+      - '**/go.sum'
+      - '**/Gemfile'
+      - '**/Gemfile.lock'
+      - '**/pom.xml'
+      - '**/build.gradle'
+      - '**/build.gradle.kts'
+      - '**/gradle.lockfile'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+      - '**/composer.json'
+      - '**/composer.lock'
+      - '**/packages.lock.json'
+
+permissions:
+  contents: read
+  # Needed only because comment-summary-in-pr is enabled:
+  pull-requests: write
+
+concurrency:
+  group: dependency-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-review:
-    if: github.event_name == 'pull_request'
     name: Dependency Review
+    # Optional: skip draft PRs to reduce noise/cost
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -10,71 +55,13 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
-          fetch-depth: 0
           persist-credentials: false
 
-      - id: deps_changed
-        name: Check for dependency file changes
-        run: |
-          # cspell:ignore pyproject
-          set -euo pipefail
-          BASE_REF="${{ github.event.pull_request.base.ref }}"
-
-          # VALIDATION: Ensure BASE_REF is set
-          if [ -z "$BASE_REF" ]; then
-            echo "::error::BASE_REF environment variable is empty"
-            exit 1
-          fi
-
-          # FIX #1: Explicitly detect and handle fetch failures (no || true)
-          echo "::debug::Fetching origin/$BASE_REF for comparison..."
-          if ! git fetch --no-tags --depth=1 origin "$BASE_REF" 2>&1; then
-            echo "::warning::Failed to fetch base ref 'origin/$BASE_REF' — assuming dependencies changed for safety"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # FIX #2: Validate the ref was actually fetched before using it
-          echo "::debug::Verifying origin/$BASE_REF exists..."
-          if ! git rev-parse --verify "origin/$BASE_REF" >/dev/null 2>&1; then
-            echo "::warning::Base ref 'origin/$BASE_REF' not found after fetch — assuming dependencies changed for safety"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # FIX #3: Safe diff - now we know the ref exists
-          echo "::debug::Computing diff between origin/$BASE_REF and HEAD..."
-          files=$(git diff --name-only "origin/$BASE_REF...HEAD" 2>/dev/null || echo "")
-          echo "::debug::Files changed in PR: $files"
-
-          # FIX #4: Check for dependency file patterns
-          if echo "$files" | grep -E -q '(^|/)(package.json|package-lock.json|yarn.lock|pyproject.toml|requirements(\.txt)?|Pipfile|setup\.py|poetry.lock|go.mod|Gemfile|pom.xml)'; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "::info::Dependency files detected — Dependency Review will run"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "::info::No dependency files detected — Dependency Review will be skipped"
-          fi
-
-      - if: steps.deps_changed.outputs.changed == 'true'
-        name: Dependency Review
+      - name: Dependency Review
         uses: actions/dependency-review-action@da24556b548a50705dd671f47852072ea4c105d9
         with:
           comment-summary-in-pr: on-failure
           deny-licenses: AGPL-1.0-only, AGPL-1.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later
           fail-on-severity: high
-
-      - if: steps.deps_changed.outputs.changed != 'true'
-        name: Skip dependency review (no relevant files changed)
-        run: |
-          echo "No dependency files modified; skipping Dependency Review."
-    timeout-minutes: 10
-name: Dependency Review
-on:
-  pull_request:
-    branches: ['main']
-    types: [opened, reopened, synchronize, ready_for_review, edited]
-permissions:
-  contents: read
