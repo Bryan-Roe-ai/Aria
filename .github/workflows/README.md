@@ -152,10 +152,11 @@ Auto-merge is controlled by `.github/workflows/auto-merge.yml` (consolidated fro
 
 | Job | Trigger | Behaviour |
 |-----|---------|-----------|
+| `prepare-github-actions-pr` | `pull_request` from `github-actions[bot]` | Adds the `autofix` label when missing and marks draft PRs ready for review so the standard auto-merge flow can take over |
 | `enable` | `pull_request` labeled `auto-merge` or `autofix` | Arms GitHub native auto-merge (squash) and posts an informational comment |
 | `disable` | `pull_request` last matching label removed | Disables native auto-merge |
 | `merge-on-gate-pass` | `check_run` completed for `All Gates Passed` | Evaluates all associated PRs: checks label, draft, fork, conflicts, and review state; squash-merges eligible PRs and posts results |
-| `bot-approve` | `pull_request` with auto-merge label (gated by `AUTO_MERGE_BOT_APPROVE == 'true'`) | Approves PRs authored by bot actors listed in `BOT_APPROVE_ALLOWLIST` using `AUTO_MERGE_APPROVE_TOKEN` |
+| `bot-approve` | `pull_request` with auto-merge label, or any same-repo `github-actions[bot]` PR | Approves PRs authored by bot actors listed in `BOT_APPROVE_ALLOWLIST` using `AUTO_MERGE_APPROVE_TOKEN`; `github-actions[bot]` bypasses the repo-variable gate |
 
 **Eligibility requirements** (enforced by `merge-on-gate-pass` and codified in `.github/actions/check-auto-merge-eligibility/action.yml`):
 - PR is not a draft
@@ -169,6 +170,8 @@ Auto-merge is controlled by `.github/workflows/auto-merge.yml` (consolidated fro
 **Bot-approve actor allowlist** (`BOT_APPROVE_ALLOWLIST` env var in `auto-merge.yml`):
 - `github-actions[bot]`
 - `copilot-swe-agent[bot]`
+
+Same-repo PRs authored by `github-actions[bot]` are automatically labeled `autofix`, moved out of draft, and auto-approved (when `AUTO_MERGE_APPROVE_TOKEN` is configured) so they can merge once `Merge Gate / All Gates Passed` succeeds.
 
 Human-authored PRs **always** require a real human approval regardless of the `AUTO_MERGE_BOT_APPROVE` setting.
 
@@ -189,8 +192,8 @@ Configure these under **Settings → Secrets and variables → Actions**.
 | `OPENAI_API_KEY` | Secret | `ci-pipeline.yml`, `pr-test-summary-comment.yml` (optional) | OpenAI API access for provider integration tests and AI-generated PR workflow summaries (falls back to deterministic summary when unset) |
 | `AZURE_OPENAI_ENDPOINT` | Secret | `ci-pipeline.yml` (optional) | Azure OpenAI endpoint URL |
 | `AZURE_OPENAI_API_KEY` | Secret | `ci-pipeline.yml` (optional) | Azure OpenAI API key |
-| `AUTO_MERGE_APPROVE_TOKEN` | Secret | `auto-merge.yml` (bot-approve job) | PAT with `pull-requests:write` scope issued by a separate identity; required for automated approval of bot-authored PRs. Never use `GITHUB_TOKEN` — it cannot approve its own PRs. |
-| `AUTO_MERGE_BOT_APPROVE` | Variable | `auto-merge.yml` (bot-approve job) | Set to `'true'` to enable automated approval of PRs authored by accounts in `BOT_APPROVE_ALLOWLIST`. Defaults to off. Human-authored PRs always require a human approval. |
+| `AUTO_MERGE_APPROVE_TOKEN` | Secret | `auto-merge.yml` (bot-approve job) | PAT with `pull-requests:write` scope issued by a separate identity; required for automated approval of bot-authored PRs, including `github-actions[bot]`. Never use `GITHUB_TOKEN` — it cannot approve its own PRs. |
+| `AUTO_MERGE_BOT_APPROVE` | Variable | `auto-merge.yml` (bot-approve job) | Set to `'true'` to enable automated approval of allowlisted bot PRs other than `github-actions[bot]`. `github-actions[bot]` always attempts auto-approval when the PAT secret is configured. Human-authored PRs always require a human approval. |
 
 > 🔐 Never log secret values. Always pass secrets via `env:` blocks scoped to the smallest possible step.
 
