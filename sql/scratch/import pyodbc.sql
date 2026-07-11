@@ -1,5 +1,5 @@
--- Python snippet for testing Azure SQL connectivity with pyodbc
--- Save as .py if you want to execute it directly.
+# Python snippet for testing Azure SQL connectivity with pyodbc
+# Save as .py if you want to execute it directly.
 
 import pyodbc
 
