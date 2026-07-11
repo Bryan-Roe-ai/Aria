@@ -1,34 +1,34 @@
 {
-    "features": {
-        "ghcr.io/devcontainers-extra/features/actions-runner:1": {
-            "version": "1.0.13",
-            "resolved": "ghcr.io/devcontainers-extra/features/actions-runner@sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8",
-            "integrity": "sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8"
-        },
-        "ghcr.io/devcontainers/features/copilot-cli:1": {
-            "version": "1.1.3",
-            "resolved": "ghcr.io/devcontainers/features/copilot-cli@sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10",
-            "integrity": "sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10"
-        },
-        "ghcr.io/devcontainers/features/git-lfs:1": {
-            "version": "1.2.5",
-            "resolved": "ghcr.io/devcontainers/features/git-lfs@sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72",
-            "integrity": "sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72"
-        },
-        "ghcr.io/helpers4/devcontainer/github-dev:": {
-            "version": "1.0.5",
-            "resolved": "ghcr.io/helpers4/devcontainer/github-dev@sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58",
-            "integrity": "sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58"
-        },
-        "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {
-            "version": "2.0.0",
-            "resolved": "ghcr.io/hspaans/devcontainer-features/pyupgrade@sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6",
-            "integrity": "sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6"
-        },
-        "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {
-            "version": "1.0.3",
-            "resolved": "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence@sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f",
-            "integrity": "sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f"
-        }
+  "features": {
+    "ghcr.io/devcontainers-extra/features/actions-runner:1": {
+      "version": "1.0.13",
+      "resolved": "ghcr.io/devcontainers-extra/features/actions-runner@sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8",
+      "integrity": "sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8"
+    },
+    "ghcr.io/devcontainers/features/copilot-cli:1": {
+      "version": "1.1.3",
+      "resolved": "ghcr.io/devcontainers/features/copilot-cli@sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10",
+      "integrity": "sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10"
+    },
+    "ghcr.io/devcontainers/features/git-lfs:1": {
+      "version": "1.2.5",
+      "resolved": "ghcr.io/devcontainers/features/git-lfs@sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72",
+      "integrity": "sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72"
+    },
+    "ghcr.io/helpers4/devcontainer/github-dev:": {
+      "version": "1.0.5",
+      "resolved": "ghcr.io/helpers4/devcontainer/github-dev@sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58",
+      "integrity": "sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58"
+    },
+    "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {
+      "version": "2.0.0",
+      "resolved": "ghcr.io/hspaans/devcontainer-features/pyupgrade@sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6",
+      "integrity": "sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6"
+    },
+    "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {
+      "version": "1.0.3",
+      "resolved": "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence@sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f",
+      "integrity": "sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f"
     }
+  }
 }
