@@ -168,6 +168,9 @@ def _norm_relpath(value: str | None) -> str | None:
     return norm
 
 
+__all__ = ["load_config", "load_jobs", "validate_job", "build_command", "main"]
+
+
 def load_config(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"jobs": []}
