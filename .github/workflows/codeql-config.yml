@@ -1,48 +1,34 @@
 name: "Hardened CodeQL"
 
-# Specify languages explicitly to avoid auto-detection issues in monorepos
 language:
   - python
-  - javascript
-  - typescript
+  - javascript-typescript
 
 queries:
   - uses: security-extended
   - uses: security-and-quality
 
+paths:
+  - "function_app.py"
+  - "shared/**"
+  - "apps/**"
+  - "scripts/**"
+  - "ai-projects/**"
+
 paths-ignore:
-  # Dependencies and build artifacts
-  - node_modules
-  - vendor
-  - dist
-  - build
-  - coverage
-  - .venv
-  - venv
-  - env
-  
-  # Project-specific: isolated AI subprojects with their own environments
-  - ai-projects/quantum-ml/.venv
-  - ai-projects/quantum-ml/env
-  - ai-projects/chat-cli/.venv
-  - ai-projects/chat-cli/env
-  - AI/microsoft_phi-silica-3.6_v1/.venv
-  - AI/microsoft_phi-silica-3.6_v1/env
-  
-  # Test fixtures and generated code
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/env/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"
   - "**/test_data/**"
   - "**/fixtures/**"
   - "**/generated/**"
-  
-  # Package managers and lock files (not source)
-  - "**/*.lock"
   - "**/*.whl"
-  - "**/*.egg-info"
-  
-  # Documentation and config
+  - "**/*.egg-info/**"
   - "**/*.md"
-  - ".git"
-  - ".github"
+  - ".git/**"
 
-# Explicit Python settings for monorepo
 python-version: "3.11"
