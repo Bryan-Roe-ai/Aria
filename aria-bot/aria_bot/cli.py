@@ -15,6 +15,7 @@ import logging
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any, cast
 
 from .defaults import DEFAULT_MAX_PLANS
 from .orchestrator import run_cycle
@@ -23,23 +24,35 @@ from .orchestrator import run_cycle
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aria_bot",
-        description=("Run one self-modifying repository cycle (rules-based, deterministic)."),
+        description=(
+            "Run one self-modifying repository cycle "
+            "(rules-based, deterministic)."
+        ),
     )
     parser.add_argument(
         "--repo-root",
         type=Path,
         default=Path.cwd(),
-        help=("Repository root to operate on (default: current working directory)."),
+        help=(
+            "Repository root to operate on "
+            "(default: current working directory)."
+        ),
     )
     parser.add_argument(
         "--apply",
         action="store_true",
-        help=("Actually write fixes to disk. Without this flag the run is dry-run."),
+        help=(
+            "Actually write fixes to disk. "
+            "Without this flag the run is dry-run."
+        ),
     )
     parser.add_argument(
         "--commit",
         action="store_true",
-        help=("Create a local git commit for applied changes (requires --apply)."),
+        help=(
+            "Create a local git commit for applied changes "
+            "(requires --apply)."
+        ),
     )
     parser.add_argument(
         "--max-plans",
@@ -58,7 +71,10 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         nargs="+",
         default=None,
-        help=("Target specific files or directories instead of scanning the entire repo."),
+        help=(
+            "Target specific files or directories instead of "
+            "scanning the entire repo."
+        ),
     )
     parser.add_argument(
         "--quiet",
@@ -74,6 +90,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Run one CLI cycle and return the process exit code."""
     args = _build_parser().parse_args(argv)
     logging.basicConfig(
         level=getattr(logging, str(args.log_level).upper(), logging.INFO),
@@ -109,8 +126,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     if not args.quiet:
-        payload = result.to_dict()
-        summary = {
+        payload: dict[str, Any] = cast(
+            dict[str, Any],
+            cast(Any, result).to_dict(),
+        )
+        summary: dict[str, Any] = {
             "status_text": payload["status_text"],
             "totals": payload["totals"],
             "validation_ok": result.validation_ok,

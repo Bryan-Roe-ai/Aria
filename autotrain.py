@@ -11,7 +11,10 @@ import warnings
 from importlib import import_module
 
 warnings.warn(
-    ("Importing 'autotrain' from the repository root is deprecated. Import from 'scripts.autotrain' instead."),
+    (
+        "Importing 'autotrain' from the repository root is deprecated. "
+        "Import from 'scripts.autotrain' instead."
+    ),
     DeprecationWarning,
     stacklevel=2,
 )
@@ -22,9 +25,6 @@ for _name, _value in _canonical.__dict__.items():
     if _name.startswith("__"):
         continue
     globals()[_name] = _value
-
-# Expose __all__ so the shim satisfies hasattr checks and star-imports.
-__all__ = list(getattr(_canonical, "__all__", []))
 
 # Mirror the canonical module so downstream monkeypatches affect one object.
 sys.modules[__name__] = _canonical
