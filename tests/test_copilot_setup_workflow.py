@@ -5,12 +5,15 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.unit
-def test_copilot_setup_workflow_concurrency_is_ref_scoped() -> None:
+def _read_copilot_setup_workflow() -> str:
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "copilot-setup-steps.yml"
     assert workflow_path.exists(), "Expected copilot setup workflow to exist"
+    return workflow_path.read_text(encoding="utf-8")
 
-    content = workflow_path.read_text(encoding="utf-8")
+
+@pytest.mark.unit
+def test_copilot_setup_workflow_concurrency_is_ref_scoped() -> None:
+    content = _read_copilot_setup_workflow()
 
     assert "concurrency:" in content
     assert "group: copilot-setup-check-${{ github.event.pull_request.number || github.ref }}" in content
@@ -18,12 +21,9 @@ def test_copilot_setup_workflow_concurrency_is_ref_scoped() -> None:
 
 @pytest.mark.unit
 def test_copilot_setup_workflow_has_selective_lint_logic() -> None:
-    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "copilot-setup-steps.yml"
-    assert workflow_path.exists(), "Expected copilot setup workflow to exist"
+    content = _read_copilot_setup_workflow()
 
-    content = workflow_path.read_text(encoding="utf-8")
-
-    assert "fetch-depth: 0" in content
+    assert "fetch-depth: 50" in content
     assert "id: targets" in content
     assert "NULL_SHA=" in content
     assert "git diff --name-only" in content
@@ -39,6 +39,48 @@ def test_copilot_setup_workflow_has_selective_lint_logic() -> None:
     assert "COPILOT*.md|copilot-*.md" in content
     assert "find .github -maxdepth 1 -type f \\( -name 'COPILOT*.md' -o -name 'copilot-*.md' \\)" in content
     assert 'is_markdown_target "$file" && printf \'%s\\0\' "$file" >> "$MD_LIST_FILE"' in content
+
+
+@pytest.mark.unit
+def test_copilot_setup_workflow_hardening_contract() -> None:
+    content = _read_copilot_setup_workflow()
+
+    assert "runs-on: ubuntu-24.04" in content
+    assert "egress-policy: block" in content
+    assert "allowed-endpoints: >" in content
+    assert "github.com:443" in content
+    assert "api.github.com:443" in content
+    assert "objects.githubusercontent.com:443" in content
+    assert "pypi.org:443" in content
+    assert "files.pythonhosted.org:443" in content
+    assert "registry.npmjs.org:443" in content
+    assert "cache: 'npm'" in content
+    assert "cache: 'pip'" in content
+    assert "yamllint -c .github/yamllint.yml" in content
+    assert "YAML_OUTCOME: ${{ steps.yamllint.outcome }}" in content
+    assert "MD_OUTCOME: ${{ steps.mdlint.outcome }}" in content
+    assert 'echo "yamllint outcome: $YAML_OUTCOME"' in content
+    assert 'echo "markdownlint outcome: $MD_OUTCOME"' in content
+    assert "# Requires bash 4+ for associative arrays." in content
+
+    name_idx = content.index("name:")
+    on_idx = content.index("\non:")
+    permissions_idx = content.index("\npermissions:")
+    concurrency_idx = content.index("\nconcurrency:")
+    env_idx = content.index("\nenv:")
+    jobs_idx = content.index("\njobs:")
+    assert name_idx < on_idx < permissions_idx < concurrency_idx < env_idx < jobs_idx
+
+
+@pytest.mark.unit
+def test_copilot_setup_yamllint_config_matches_expected_rules() -> None:
+    config_path = Path(__file__).resolve().parents[1] / ".github" / "yamllint.yml"
+    assert config_path.exists(), "Expected .github/yamllint.yml to exist"
+
+    assert (
+        config_path.read_text(encoding="utf-8")
+        == "extends: default\nrules:\n  line-length:\n    max: 140\n    level: warning\n"
+    )
 
 
 @pytest.mark.unit
