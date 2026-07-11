@@ -8,8 +8,8 @@ Architecture: Hybrid quantum-classical transformer
     - Code-aware tokenizer      : character-level + keyword
                                   special tokens
     - Auto-detect backend       : Qiskit Aer
-                                  (via pennylane-qiskit) →
-                                  PennyLane default.qubit → classical
+                                  (via pennylane-qiskit) ->
+                                  PennyLane default.qubit -> classical
                                   MLP fallback
 
 Quick start
@@ -28,12 +28,13 @@ Quick start
 from __future__ import annotations
 
 import importlib.util
+import logging
 import math
 import random
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import torch
@@ -60,25 +61,29 @@ _pennylane_available = qml is not None
 _qiskit_aer_available = False
 if _pennylane_available:
     _qiskit_aer_available = (
-        importlib.util.find_spec("pennylane_qiskit") is not None and importlib.util.find_spec("qiskit_aer") is not None
+        importlib.util.find_spec("pennylane_qiskit") is not None
+        and importlib.util.find_spec("qiskit_aer") is not None
     )
 
 
-def _make_device(n_qubits: int):
+
+def _make_device(n_qubits: int) -> tuple[str, Any | None]:
     """Return (backend_label, qml.device) using the best available backend."""
     if _qiskit_aer_available and qml is not None:
         try:
-            dev = qml.device(
+            qml_mod = cast(Any, qml)
+            aer_dev: Any = qml_mod.device(  # type: ignore[no-untyped-call]
                 "qiskit.aer",
                 wires=n_qubits,
                 backend="statevector_simulator",
             )
-            return "qiskit.aer", dev
+            return "qiskit.aer", aer_dev
         except (RuntimeError, ValueError, TypeError):
             pass
     if _pennylane_available and qml is not None:
-        dev = qml.device("default.qubit", wires=n_qubits)
-        return "default.qubit", dev
+        qml_mod = cast(Any, qml)
+        default_dev: Any = qml_mod.device("default.qubit", wires=n_qubits)
+        return "default.qubit", default_dev
     return "classical", None
 
 
@@ -161,7 +166,7 @@ class CodeTokenizer:
         while i < len(text):
             matched = False
             for kw in self._keywords:
-                if text[i : i + len(kw)] == kw:
+                if text[i : i + len(kw)] == kw:  # removed dead jls_extract_var
                     ids.append(self._tok2id[kw])
                     i += len(kw)
                     matched = True
@@ -733,7 +738,7 @@ class CodeDataset(Dataset):
         )
 
     def __len__(self) -> int:
-        return max(0, len(self.tokens) - self.seq_len - 1)
+        return max(0, len(self.tokens) - self.seq_len)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         chunk = self.tokens[idx : idx + self.seq_len + 1]
@@ -804,11 +809,15 @@ class QuantumCodeTrainer:
             anneal_strategy="cos",
         )
 
+    @staticmethod
+    def _set_seed(seed: int) -> None:
+        torch.manual_seed(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+
     def train(self) -> list[dict]:
         """Run the training loop.  Returns per-epoch metric dicts."""
-        torch.manual_seed(self.cfg.seed)
-        random.seed(self.cfg.seed)
-        np.random.seed(self.cfg.seed)
+        self._set_seed(self.cfg.seed)
 
         history: list[dict] = []
         step = 0
@@ -829,7 +838,7 @@ class QuantumCodeTrainer:
                     ignore_index=CodeTokenizer.PAD,
                 )
 
-                self.optimizer.zero_grad()
+                self.optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 nn.utils.clip_grad_norm_(
                     self.model.parameters(),
@@ -988,8 +997,7 @@ def generate(
         code = generate(
             model,
             tokenizer,
-            "def factorial(n):",
-            max_new_tokens=60,
+            prompt="def hello(",
         )
         print(code)
     """
@@ -1000,10 +1008,8 @@ def generate(
 
     model.eval()
     model_device = next(model.parameters()).device
-    requested_device = torch.device(device)
-    input_device = model_device if requested_device != model_device else requested_device
     ids = tokenizer.encode(prompt, add_bos=True, add_eos=False)
-    input_tensor = torch.tensor([ids], dtype=torch.long, device=input_device)
+    input_tensor = torch.tensor([ids], dtype=torch.long, device=model_device)
     with torch.no_grad():
         out_ids = model.generate(
             input_tensor,

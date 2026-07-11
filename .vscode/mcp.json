@@ -37,7 +37,6 @@
       "password": false
     }
   ],
-
   // MCP server definitions for this workspace.
   "servers": {
     // Local project MCP servers
@@ -60,7 +59,6 @@
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
       }
     },
-
     "quantum-ai": {
       "type": "stdio",
       "command": "${input:PYTHON_CMD}",
@@ -80,7 +78,6 @@
         "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml:${workspaceFolder}"
       }
     },
-
     "task-complete": {
       "type": "stdio",
       "command": "${input:PYTHON_CMD}",
@@ -97,7 +94,6 @@
         "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}"
       }
     },
-
     // External MCP servers
     "io.github.github/github-mcp-server": {
       "type": "stdio",
@@ -112,7 +108,6 @@
         "GH_TOKEN": "${input:GITHUB_TOKEN}"
       }
     },
-
     "io.github.f/prompts.chat-mcp": {
       "type": "stdio",
       "command": "npx",
@@ -126,7 +121,6 @@
         "PROMPTS_QUERY": "${input:PROMPTS_QUERY}"
       }
     },
-
     "microsoft/markitdown": {
       "type": "stdio",
       "command": "uvx",
@@ -135,12 +129,10 @@
       ],
       "cwd": "${workspaceFolder}"
     },
-
     "microsoftdocs/mcp": {
       "type": "http",
       "url": "https://learn.microsoft.com/api/mcp"
     },
-
     // Optional generic fetch server
     "fetch": {
       "type": "stdio",
@@ -149,6 +141,14 @@
         "mcp-server-fetch"
       ],
       "cwd": "${workspaceFolder}"
+    },
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "X-MCP-Toolsets": "secret_protection",
+        "X-MCP-Tools": "run_secret_scanning"
+      }
     }
   }
 }

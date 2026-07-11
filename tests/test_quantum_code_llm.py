@@ -6,18 +6,19 @@ import sys
 from pathlib import Path
 
 import pytest
+import torch
 
-torch = pytest.importorskip("torch")
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "quantum-ai" / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "quantum-ai" / "src"))
-
-from quantum_code_llm import (
+from quantum_code_llm import (  # noqa: E402
+    CodeDataset,
     CodeTokenizer,
-    QuantumCodeLLM,  # noqa: E402
+    QuantumCodeLLM,
     QuantumCodeLLMConfig,
     generate,
-    load_checkpoint,
-    save_checkpoint,
 )
 
 
@@ -30,7 +31,6 @@ def tiny_model() -> tuple[QuantumCodeLLM, CodeTokenizer]:
         n_heads=4,
         n_layers=1,
         n_qubits=2,
-        max_seq_len=16,
         backend="classical",
     )
     model = QuantumCodeLLM(config)

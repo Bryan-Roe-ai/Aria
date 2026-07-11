@@ -1,5 +1,4 @@
-"""
-Local Developer Adapter for Azure Functions endpoints
+"""Local Developer Adapter for Azure Functions endpoints.
 
 This tiny adapter lets you run selected Azure Functions handlers
 locally without needing the Azure Functions Core Tools host.
@@ -38,30 +37,49 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     _load_env_loader = None
 
+flask_app_cls: Any | None = None
+flask_make_response: Callable[..., Any] | None = None
+flask_request: Any | None = None
+_flask_cors: Any | None = None
+has_flask = False
+
 try:
-    from flask import Flask as flask_app_cls  # type: ignore
-    from flask import make_response as flask_make_response  # type: ignore
-    from flask import request as flask_request  # type: ignore
-
-    HAS_FLASK = True
+    from flask import Flask as _flask_app_cls  # type: ignore
+    from flask import make_response as _flask_make_response  # type: ignore
+    from flask import request as _flask_request  # type: ignore
+    from flask_cors import CORS as _flask_cors  # type: ignore
 except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
-    flask_app_cls = None  # type: ignore[assignment]
-    flask_make_response = None  # type: ignore[assignment]
-    flask_request = None  # type: ignore[assignment]
-    HAS_FLASK = False
-
-
-if False:  # pragma: no cover - typing-only import for static analyzers
-    from flask import Flask as flask_app_cls  # type: ignore[no-redef]
-    from flask import make_response as flask_make_response  # type: ignore[no-redef]
-    from flask import request as flask_request  # type: ignore[no-redef]
+    pass
+else:
+    flask_app_cls = _flask_app_cls
+    flask_make_response = _flask_make_response
+    flask_request = _flask_request
+    has_flask = True
 
 logger = logging.getLogger(__name__)
+
+JsonValue = (
+    dict[str, Any] | list[Any] | str | int | float | bool | None
+)
+
+
+def _apply_cors_headers(
+    handler: BaseHTTPRequestHandler,
+) -> None:
+    """Apply CORS headers for local development."""
+    handler.send_header("Access-Control-Allow-Origin", "*")
+    handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+    handler.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 
 def _safe_log_label(value: str) -> str:
     """Strip control chars from user-influenced values before logging."""
-    return str(value).split("?", 1)[0].replace("\n", "").replace("\r", "")[:120]
+    return (
+        str(value)
+        .split("?", 1)[0]
+        .replace("\n", "")
+        .replace("\r", "")[:120]
+    )
 
 
 def _coerce_bytes(value: Any) -> bytes:
@@ -109,7 +127,10 @@ def _load_env_file() -> None:
 
 def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statements
     """Install a lightweight azure.functions shim for local development."""
-    logger.debug("azure.functions not found; installing lightweight shim for local dev adapter")
+    logger.debug(
+        "azure.functions not found; installing lightweight shim "
+        "for local dev adapter"
+    )
     fake_mod: Any = types.ModuleType("azure.functions")
 
     class AuthLevel:
@@ -124,24 +145,32 @@ def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statemen
             self.url = kwargs.get("url", "/")
             self.params = dict(kwargs.get("params") or {})
             self.route_params = dict(kwargs.get("route_params") or {})
-            self.headers = {k.lower(): v for k, v in dict(kwargs.get("headers") or {}).items()}
+            self.headers = {
+                k.lower(): v
+                for k, v in dict(kwargs.get("headers") or {}).items()
+            }
             self._body = _coerce_bytes(kwargs.get("body"))
-            self._json_cache = None
+            self._json_cache: JsonValue | None = None
 
         def get_body(self) -> bytes:
             """Return the request body bytes."""
             return self._body
 
-        def get_json(self, force: bool = False):
+        def get_json(self, force: bool = False) -> JsonValue:
             """Parse and cache the body as JSON."""
             if self._json_cache is not None and not force:
                 return self._json_cache
             try:
                 text = self._body.decode("utf-8")
-                parsed = json.loads(text) if text else {}
+                parsed = cast(JsonValue, json.loads(text) if text else {})
                 self._json_cache = parsed
                 return parsed
-            except (AttributeError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as e:
+            except (
+                AttributeError,
+                TypeError,
+                UnicodeDecodeError,
+                json.JSONDecodeError,
+            ) as e:
                 logger.debug("HttpRequest.get_json failed: %s", e)
                 raise ValueError("Failed to parse JSON body") from e
 
@@ -165,10 +194,16 @@ def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statemen
         def __init__(self):
             self._routes = []
 
-        def route(self, *args, **kwargs):
+        def route(
+            self,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
             """Decorator placeholder that records route metadata."""
 
-            def decorator(fn):
+            def decorator(
+                fn: Callable[..., Any],
+            ) -> Callable[..., Any]:
                 try:
                     fn.__qai_route__ = {"args": args, "kwargs": kwargs}
                 except AttributeError as exc:
@@ -193,21 +228,19 @@ def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statemen
 _load_env_file()
 
 try:
-    from azure.functions import (  # type: ignore
-        HttpResponse as AzureHttpResponse,
-    )
+    import_module("azure.functions")
 except ModuleNotFoundError:
-    AzureHttpResponse = _install_azure_functions_shim()
+    _install_azure_functions_shim()
 
 # Import function_app only after sys.path, env, and shim setup.
 
 
 def _get_function_app() -> Any:
     """Import function_app after sys.path, env, and azure shim setup."""
-    # pylint: disable=import-outside-toplevel
-    import function_app as fa
-
-    return fa
+    try:
+        return import_module("function_app")
+    except (ModuleNotFoundError, SyntaxError) as exc:
+        raise RuntimeError("Failed to import function_app") from exc
 
 
 def _azure_response_parts(
@@ -255,7 +288,10 @@ def _azure_to_flask(resp: Any) -> Any:
             flask_resp.headers[k] = v
     except Exception:
         # best-effort fallback for unexpected header shapes
-        logger.debug("Unexpected header shape when converting azure HttpResponse to Flask Response")
+        logger.debug(
+            "Unexpected header shape when converting azure "
+            "HttpResponse to Flask Response"
+        )
 
     return flask_resp
 
@@ -272,7 +308,10 @@ def _build_local_http_request(
     try:
         from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
     except (ImportError, AttributeError) as exc:
-        raise RuntimeError("No HttpRequest implementation available for local dev adapter") from exc
+        raise RuntimeError(
+            "No HttpRequest implementation available "
+            "for local dev adapter"
+        ) from exc
 
     req_factory = cast(Callable[..., Any], ShimHttpRequest)
     try:
@@ -306,7 +345,10 @@ def _call_function_handler(
     body_bytes = _coerce_bytes(body)
 
     request_headers = dict(headers or {})
-    if body is not None and not any(k.lower() == "content-type" for k in request_headers):
+    if body is not None and not any(
+        k.lower() == "content-type"
+        for k in request_headers
+    ):
         request_headers["Content-Type"] = "application/json"
 
     if isinstance(req_cls, type) or callable(req_cls):
@@ -507,39 +549,70 @@ def get_agi_stream_parts(
 
 def create_app() -> Any:
     """Create the Flask app when Flask is available."""
-    if not HAS_FLASK:
+    if not has_flask:
         raise RuntimeError("Flask is not installed")
     assert flask_app_cls is not None
 
     app = flask_app_cls(__name__)
 
+    # Enable CORS for local development
+    try:
+        _flask_cors(app, resources={r"/api/*": {"origins": "*"}})
+    except Exception:  # pragma: no cover
+        logger.debug("CORS setup failed; continuing without CORS")
+
     @app.get("/api/ai/status")
-    def ai_status_route():
+    def ai_status_route():  # pyright: ignore[reportUnusedFunction]
         return get_ai_status_response()
 
     @app.get("/api/agi/status")
-    def agi_status_route():
+    def agi_status_route():  # pyright: ignore[reportUnusedFunction]
         return get_agi_status_response()
 
     @app.get("/api/ai/routes")
-    def ai_routes_route():
+    def ai_routes_route():  # pyright: ignore[reportUnusedFunction]
         return get_ai_routes_response()
 
     @app.post("/api/agi/analyze")
-    def agi_analyze_route():
+    def agi_analyze_route():  # pyright: ignore[reportUnusedFunction]
         return _agi_json_response("agi_analyze", "/api/agi/analyze")
 
     @app.post("/api/agi/reason")
-    def agi_reason_route():
+    def agi_reason_route():  # pyright: ignore[reportUnusedFunction]
         return _agi_json_response("agi_reason", "/api/agi/reason")
 
     @app.post("/api/agi/stream")
-    def agi_stream_route():
+    def agi_stream_route():  # pyright: ignore[reportUnusedFunction]
         return _agi_json_response("agi_stream", "/api/agi/stream")
 
     @app.get("/api/chat-web/static/agi_stream_utils.js")
-    def agi_stream_utils_route():
+    def agi_stream_utils_route():  # pyright: ignore[reportUnusedFunction]
         return get_agi_stream_utils_response()
+
+    # Aria character endpoints (if available)
+    try:
+        @app.get("/api/aria/state")
+        def aria_state_route():  # pyright: ignore[reportUnusedFunction]
+            azure_resp = _call_function_handler("aria_get_state", "GET", "/api/aria/state")
+            return _azure_to_flask(azure_resp)
+
+        @app.post("/api/aria/command")
+        def aria_command_route():  # pyright: ignore[reportUnusedFunction]
+            return _agi_json_response("aria_process_command", "/api/aria/command")
+
+        @app.post("/api/aria/execute")
+        def aria_execute_route():  # pyright: ignore[reportUnusedFunction]
+            return _agi_json_response("aria_execute_actions", "/api/aria/execute")
+
+        @app.post("/api/aria/object")
+        def aria_object_route():  # pyright: ignore[reportUnusedFunction]
+            return _agi_json_response("aria_manage_object", "/api/aria/object")
+
+        @app.post("/api/aria/world")
+        def aria_world_route():  # pyright: ignore[reportUnusedFunction]
+            return _agi_json_response("aria_generate_world", "/api/aria/world")
+    except Exception:  # pragma: no cover
+        logger.debug("Aria endpoints not available; skipping registration")
 
     return app
 
@@ -580,6 +653,7 @@ def run_stdlib_server(
                 headers = {}
 
             self.send_response(status_code)
+            _apply_cors_headers(self)
             sent_content_type = False
             if mimetype:
                 self.send_header("Content-Type", str(mimetype))
@@ -600,48 +674,60 @@ def run_stdlib_server(
 
         def do_GET(self) -> None:  # noqa: N802
             path = self.path.split("?", 1)[0]
-            if path == "/api/ai/status":
-                parts_fn = get_ai_status_parts
-            elif path == "/api/agi/status":
-                parts_fn = get_agi_status_parts
-            elif path == "/api/ai/routes":
-                parts_fn = get_ai_routes_parts
-            elif path == "/api/chat-web/static/agi_stream_utils.js":
-                parts_fn = get_agi_stream_utils_parts
-            else:
+            route_map = {
+                "/api/ai/status": get_ai_status_parts,
+                "/api/agi/status": get_agi_status_parts,
+                "/api/ai/routes": get_ai_routes_parts,
+                "/api/chat-web/static/agi_stream_utils.js": get_agi_stream_utils_parts,
+            }
+
+            if path not in route_map:
                 self.send_response(404)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(b'{"error":"not found"}')
                 return
 
-            self._serve_parts(parts_fn)
+            self._serve_parts(route_map[path])
+
+        def do_OPTIONS(self) -> None:  # noqa: N802
+            """Handle CORS preflight requests."""
+            self.send_response(204)
+            _apply_cors_headers(self)
+            self.end_headers()
 
         # pylint: disable=invalid-name
         def do_POST(self) -> None:  # noqa: N802
             """Handle POST requests for the supported AGI endpoints."""
             path = self.path.split("?", 1)[0]
-            if path == "/api/agi/analyze":
-                parts_fn = get_agi_analyze_parts
-            elif path == "/api/agi/reason":
-                parts_fn = get_agi_reason_parts
-            elif path == "/api/agi/stream":
-                parts_fn = get_agi_stream_parts
-            else:
+            route_map = {
+                "/api/agi/analyze": get_agi_analyze_parts,
+                "/api/agi/reason": get_agi_reason_parts,
+                "/api/agi/stream": get_agi_stream_parts,
+            }
+
+            if path not in route_map:
                 self.send_response(404)
+                _apply_cors_headers(self)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(b'{"error":"not found"}')
                 return
 
             length = int(self.headers.get("Content-Length", "0") or 0)
-            body = self.rfile.read(length) if length else _json_body({"query": "local dev adapter smoke"})
-            self._serve_parts(parts_fn, request_body=body)
+            body = (
+                self.rfile.read(length)
+                if length
+                else _json_body(
+                    {"query": "local dev adapter smoke"}
+                )
+            )
+            self._serve_parts(route_map[path], request_body=body)
 
         # pylint: disable=arguments-differ
-        def log_message(self, format: str, *args: Any) -> None:
+        def log_message(self, fmt: str, *args: Any) -> None:
             """Silence the default HTTP server access log."""
-            del format, args
+            del fmt, args
 
     server = ThreadingHTTPServer((host, port), _Handler)
     logger.info(
@@ -667,25 +753,35 @@ def check_status_endpoints() -> int:  # pylint: disable=broad-exception-caught
         ),
         (
             "POST /api/agi/analyze",
-            lambda: get_agi_analyze_parts(_json_body({"query": "adapter analyze check"})),
+            lambda: get_agi_analyze_parts(
+                _json_body({"query": "adapter analyze check"})
+            ),
         ),
         (
             "POST /api/agi/reason",
-            lambda: get_agi_reason_parts(_json_body({"query": "adapter reason check"})),
+            lambda: get_agi_reason_parts(
+                _json_body({"query": "adapter reason check"})
+            ),
         ),
         (
             "POST /api/agi/stream",
-            lambda: get_agi_stream_parts(_json_body({"query": "adapter stream check"})),
+            lambda: get_agi_stream_parts(
+                _json_body({"query": "adapter stream check"})
+            ),
         ),
     )
     errors: list[str] = []
     for label, parts_fn in probes:
         try:
-            _body, status_code, _mimetype, _headers = parts_fn()
+            resp_body, status_code, mimetype, headers = parts_fn()
             if status_code != 200:
                 errors.append(f"{label}: http {status_code}")
+                logger.warning("%s returned %d", label, status_code)
+            else:
+                logger.debug("%s: ok (%d bytes, %s)", label, len(resp_body), mimetype or "no mimetype")
         except Exception as exc:  # noqa: BLE001
             errors.append(f"{label}: {exc}")
+            logger.error("%s failed: %s", label, exc, exc_info=True)
 
     if errors:
         for line in errors:
@@ -742,9 +838,13 @@ def main(argv: list[str] | None = None) -> None:
     if args.check:
         raise SystemExit(check_status_endpoints())
 
-    print(f"Starting local dev adapter for /api/ai/status and /api/agi/status on http://{args.host}:{args.port}")
+    print(
+        "Starting local dev adapter for "
+        "/api/ai/status and /api/agi/status "
+        f"on http://{args.host}:{args.port}"
+    )
 
-    if HAS_FLASK:
+    if has_flask:
         app = create_app()
         app.run(host=args.host, port=args.port, debug=False)
     else:

@@ -362,6 +362,7 @@
         "aitk",
         "cimg",
         "evals",
+        "funcs",
         "isort",
         "MYPY",
         "pids",
