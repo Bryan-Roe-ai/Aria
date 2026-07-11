@@ -2,9 +2,12 @@
 
 Covers:
 - Consolidated auto-merge.yml has the correct dual trigger (pull_request + check_run).
+- github-actions[bot] PRs are auto-prepared for merge by adding `autofix` and
+  marking draft PRs ready for review.
 - merge-on-gate-pass job filters on the canonical check name and conclusion.
 - enable / disable jobs guard against forks and drafts.
-- bot-approve job is gated by the AUTO_MERGE_BOT_APPROVE variable.
+- bot-approve job auto-runs for github-actions[bot] and stays variable-gated for
+  other bot actors.
 - auto-merge-on-ci.yml is a stub (no longer watches 'AGI smoke' workflow_run).
 - check-auto-merge-eligibility composite action has required inputs and outputs.
 """
@@ -70,9 +73,9 @@ def test_auto_merge_has_pull_request_trigger() -> None:
 
 def test_auto_merge_has_check_run_trigger() -> None:
     wf = _load_auto_merge()
-    assert "check_run" in _get_triggers(wf), (
-        "auto-merge.yml must trigger on check_run events so it fires when 'All Gates Passed' completes"
-    )
+    assert "check_run" in _get_triggers(
+        wf
+    ), "auto-merge.yml must trigger on check_run events so it fires when 'All Gates Passed' completes"
 
 
 def test_auto_merge_check_run_trigger_on_completed() -> None:
@@ -98,6 +101,11 @@ def test_auto_merge_has_enable_job() -> None:
     assert "enable" in wf["jobs"], "auto-merge.yml must have an 'enable' job"
 
 
+def test_auto_merge_has_prepare_github_actions_job() -> None:
+    wf = _load_auto_merge()
+    assert "prepare-github-actions-pr" in wf["jobs"], "auto-merge.yml must prepare github-actions[bot] PRs"
+
+
 def test_auto_merge_has_disable_job() -> None:
     wf = _load_auto_merge()
     assert "disable" in wf["jobs"], "auto-merge.yml must have a 'disable' job"
@@ -114,6 +122,38 @@ def test_auto_merge_has_bot_approve_job() -> None:
 
 
 # ---------------------------------------------------------------------------
+# prepare-github-actions-pr — auto-ready + label for github-actions[bot]
+# ---------------------------------------------------------------------------
+
+
+def test_prepare_job_targets_github_actions_bot() -> None:
+    wf = _load_auto_merge()
+    job_if = wf["jobs"]["prepare-github-actions-pr"].get("if", "")
+    assert "github-actions[bot]" in job_if, "prepare job must target github-actions[bot] PR authors"
+
+
+def test_prepare_job_guards_against_forks() -> None:
+    wf = _load_auto_merge()
+    job_if = wf["jobs"]["prepare-github-actions-pr"].get("if", "")
+    assert "head.repo.full_name == github.repository" in job_if, "prepare job must guard against fork PRs"
+
+
+def test_prepare_job_skips_unlabeled_event_replays() -> None:
+    wf = _load_auto_merge()
+    job_if = wf["jobs"]["prepare-github-actions-pr"].get("if", "")
+    assert "github.event.action != 'unlabeled'" in job_if, "prepare job must skip unlabeled events"
+
+
+def test_prepare_job_adds_autofix_label_and_marks_ready() -> None:
+    wf = _load_auto_merge()
+    steps = wf["jobs"]["prepare-github-actions-pr"]["steps"]
+    script_step = next(step for step in steps if step.get("name") == "Ready PR and apply autofix label")
+    script = script_step["with"]["script"]
+    assert "labels: 'autofix'" in script, "prepare job must add the autofix label when missing"
+    assert "markPullRequestReadyForReview" in script, "prepare job must mark draft PRs ready for review"
+
+
+# ---------------------------------------------------------------------------
 # merge-on-gate-pass — correct check filtering
 # ---------------------------------------------------------------------------
 
@@ -121,17 +161,17 @@ def test_auto_merge_has_bot_approve_job() -> None:
 def test_merge_on_gate_pass_filters_check_run_event() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["merge-on-gate-pass"].get("if", "")
-    assert "github.event_name == 'check_run'" in job_if, (
-        "merge-on-gate-pass must filter on github.event_name == 'check_run'"
-    )
+    assert (
+        "github.event_name == 'check_run'" in job_if
+    ), "merge-on-gate-pass must filter on github.event_name == 'check_run'"
 
 
 def test_merge_on_gate_pass_filters_all_gates_passed_name() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["merge-on-gate-pass"].get("if", "")
-    assert "All Gates Passed" in job_if, (
-        "merge-on-gate-pass must filter on check_run.name == 'All Gates Passed' (the canonical fan-in job name from merge-gate.yml)"
-    )
+    assert (
+        "All Gates Passed" in job_if
+    ), "merge-on-gate-pass must filter on check_run.name == 'All Gates Passed' (the canonical fan-in job name from merge-gate.yml)"
 
 
 def test_merge_on_gate_pass_filters_success_conclusion() -> None:
@@ -155,9 +195,9 @@ def test_merge_on_gate_pass_has_write_permissions() -> None:
 def test_enable_job_guards_against_forks() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["enable"].get("if", "")
-    assert "head.repo.full_name == github.repository" in job_if, (
-        "enable job must guard against fork PRs by checking head.repo.full_name == github.repository"
-    )
+    assert (
+        "head.repo.full_name == github.repository" in job_if
+    ), "enable job must guard against fork PRs by checking head.repo.full_name == github.repository"
 
 
 def test_enable_job_guards_against_drafts() -> None:
@@ -169,9 +209,9 @@ def test_enable_job_guards_against_drafts() -> None:
 def test_enable_job_fires_on_pull_request_event() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["enable"].get("if", "")
-    assert "github.event_name == 'pull_request'" in job_if, (
-        "enable job must check github.event_name == 'pull_request' to avoid running on check_run events"
-    )
+    assert (
+        "github.event_name == 'pull_request'" in job_if
+    ), "enable job must check github.event_name == 'pull_request' to avoid running on check_run events"
 
 
 # ---------------------------------------------------------------------------
@@ -204,10 +244,16 @@ def test_disable_job_checks_no_remaining_label() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_bot_approve_gated_by_variable() -> None:
+def test_bot_approve_requires_variable_gate_for_other_bots() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["bot-approve"].get("if", "")
-    assert "AUTO_MERGE_BOT_APPROVE" in job_if, "bot-approve job must be gated by the AUTO_MERGE_BOT_APPROVE variable"
+    assert "AUTO_MERGE_BOT_APPROVE" in job_if, "bot-approve job must still support the AUTO_MERGE_BOT_APPROVE gate"
+
+
+def test_bot_approve_auto_runs_for_github_actions_bot() -> None:
+    wf = _load_auto_merge()
+    job_if = wf["jobs"]["bot-approve"].get("if", "")
+    assert "github-actions[bot]" in job_if, "bot-approve job must auto-run for github-actions[bot] PRs"
 
 
 def test_bot_approve_guards_against_forks() -> None:

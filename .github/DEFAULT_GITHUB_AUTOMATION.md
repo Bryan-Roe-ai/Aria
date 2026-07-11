@@ -32,10 +32,13 @@ This repository uses a default GitHub automation baseline for quality, safety, a
 8. **Auto-merge label automation**
     - Workflow: `.github/workflows/auto-merge.yml`
     - Labels `auto-merge` or `autofix` on a PR arm GitHub native auto-merge (squash).
+    - Same-repo PRs authored by `github-actions[bot]` are auto-labeled `autofix`
+      and moved out of draft so they flow through the same merge path automatically.
     - When `Merge Gate / All Gates Passed` check succeeds, the `merge-on-gate-pass` job
       validates eligibility and calls the merge API directly.
-    - Bot-authored PRs can be automatically approved when `AUTO_MERGE_BOT_APPROVE=true`
-      (repository variable) and `AUTO_MERGE_APPROVE_TOKEN` (PAT secret) are configured.
+    - `github-actions[bot]` PRs always attempt automated approval when
+      `AUTO_MERGE_APPROVE_TOKEN` (PAT secret) is configured; other allowlisted bot PRs
+      still require `AUTO_MERGE_BOT_APPROVE=true` (repository variable).
     - Required labels (create manually or via the CLI):
         ```bash
         gh label create auto-merge --color 0075ca --description "Squash-merge when all CI gates pass"

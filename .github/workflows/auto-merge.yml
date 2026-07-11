@@ -2,6 +2,10 @@
 # Auto Merge — Label-triggered and gate-triggered PR merge automation
 # =============================================================================
 # Purpose:
+#   • prepare-github-actions-pr — converts same-repo github-actions[bot] PRs to
+#                                 ready-for-review and ensures they carry the
+#                                 `autofix` label so the existing auto-merge
+#                                 pipeline can take over.
 #   • enable             — arms GitHub native auto-merge when `auto-merge` or
 #                          `autofix` label is present on a same-repo PR.
 #   • disable            — disables native auto-merge when the last matching
@@ -38,6 +42,69 @@ env:
   BOT_APPROVE_ALLOWLIST: "github-actions[bot] copilot-swe-agent[bot]"
 
 jobs:
+  prepare-github-actions-pr:
+    name: Prepare github-actions PR
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'github-actions[bot]' &&
+      github.event.action != 'unlabeled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - name: Ready PR and apply autofix label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const labelNames = (pr.labels || []).map((label) => label.name);
+            const hasAutoMergeLabel =
+              labelNames.includes('auto-merge') || labelNames.includes('autofix');
+
+            if (!hasAutoMergeLabel) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: 'autofix',
+              });
+              core.info(`Added 'autofix' label to PR #${pr.number}.`);
+            } else {
+              core.info(`PR #${pr.number} already has an auto-merge label.`);
+            }
+
+            if (!pr.draft) {
+              core.info(`PR #${pr.number} is already ready for review.`);
+              return;
+            }
+
+            await github.graphql(
+              `
+                mutation MarkReadyForReview($pullRequestId: ID!) {
+                  markPullRequestReadyForReview(input: { pullRequestId: $pullRequestId }) {
+                    pullRequest {
+                      number
+                      isDraft
+                    }
+                  }
+                }
+              `,
+              { pullRequestId: pr.node_id },
+            );
+
+            core.info(`Marked PR #${pr.number} ready for review.`);
+
   enable:
     name: Enable Auto-Merge
     if: >-
@@ -265,10 +332,15 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.draft == false &&
-      vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
       (
-        contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
-        contains(github.event.pull_request.labels.*.name, 'autofix')
+        github.event.pull_request.user.login == 'github-actions[bot]' ||
+        (
+          vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
+          (
+            contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
+            contains(github.event.pull_request.labels.*.name, 'autofix')
+          )
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 5
