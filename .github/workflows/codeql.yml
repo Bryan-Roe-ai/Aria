@@ -99,16 +99,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - build-mode: none
+          - build-mode: autobuild
             language: actions
             os: ubuntu-latest
-          - build-mode: none
+          - build-mode: autobuild
             language: javascript-typescript
             os: ubuntu-latest
-          - build-mode: none
+          - build-mode: autobuild
             language: python
             os: ubuntu-latest
-          - build-mode: none
+          - build-mode: autobuild
             language: c-cpp
             os: ubuntu-latest
     timeout-minutes: 360
@@ -621,7 +621,7 @@ on:
   workflow_dispatch:
     inputs:
       allow_unsafe_fixes:
-        default: false
+        default: true
         description: 'Allow potentially unsafe autofixes (e.g. ruff --unsafe-fixes) on scheduled/manual runs only'
         type: boolean
       open_autofix_pr:
