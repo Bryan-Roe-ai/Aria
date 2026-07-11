@@ -27,9 +27,29 @@ def test_codeql_c_cpp_uses_buildless_mode() -> None:
         entry for entry in workflow["jobs"]["analyze"]["strategy"]["matrix"]["include"] if entry["language"] == "c-cpp"
     )
 
-    assert c_cpp_entry["build-mode"] == "none", (
-        "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+    assert (
+        c_cpp_entry["build-mode"] == "none"
+    ), "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+
+
+@pytest.mark.unit
+def test_codeql_workflow_pins_buildless_capable_codeql_actions() -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    init_step = next(step for step in workflow["jobs"]["analyze"]["steps"] if step["name"] == "Initialize CodeQL")
+    analyze_step = next(
+        step for step in workflow["jobs"]["analyze"]["steps"] if step["name"] == "Perform CodeQL Analysis"
     )
+
+    expected_init = "github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8"
+    expected_analyze = "github/codeql-action/analyze@4e828ff8d448a8a6e532957b1811f387a63867e8"
+
+    assert init_step["uses"] == expected_init, (
+        "The c-cpp buildless lane requires a CodeQL action release that supports build-mode none; do not downgrade "
+        "init back to v3."
+    )
+    assert analyze_step["uses"] == expected_analyze
 
 
 @pytest.mark.unit
@@ -115,6 +135,6 @@ def test_codeql_config_has_document_start_and_no_trailing_whitespace() -> None:
     content = config_path.read_text(encoding="utf-8")
 
     assert content.startswith("---\n"), "CodeQL config must keep its YAML document start marker."
-    assert all(line == line.rstrip() for line in content.splitlines()), (
-        "CodeQL config should not contain trailing whitespace."
-    )
+    assert all(
+        line == line.rstrip() for line in content.splitlines()
+    ), "CodeQL config should not contain trailing whitespace."
