@@ -1,57 +1,50 @@
-# CodeQL configuration file for the Aria repository.
-# Reference: https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning#using-a-custom-configuration-file
+# CodeQL configuration for Aria.
+# Docs:
+# https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/customizing-your-advanced-setup-for-code-scanning#using-a-custom-configuration-file
 
-# NOTE: 'language' and 'python-version' are NOT valid keys here.
-# Language selection is done in the workflow YAML (codeql.yml) via the matrix.
-# Python version is set via actions/setup-python in the workflow.
+# NOTE:
+# - 'language' is configured in the CodeQL workflow matrix, not here.
+# - Python version is configured in the workflow via actions/setup-python.
 
-# Run the default queries plus the security-extended and security-and-quality suites.
 disable-default-queries: false
 
 queries:
   - uses: security-extended
   - uses: security-and-quality
 
-# Optional: add experimental/community packs for broader CWE coverage.
-# packs:
-#   - codeql/python-queries
-#   - codeql/javascript-queries
-
-# Do NOT use 'paths:' unless you want to restrict scanning to only those paths.
-# Omitting it means: scan everything not excluded below.
-
+# Keep scan coverage broad; only exclude non-source, vendored, or generated content.
 paths-ignore:
-  # Third-party dependencies — never scan these
+  # Third-party dependencies
   - "**/node_modules/**"
   - "**/vendor/**"
 
-  # Virtual environments (top-level and per-subproject)
+  # Python virtual environments
   - "**/.venv/**"
   - "**/venv/**"
   - "**/env/**"
-  - "ai-projects/quantum-ml/.venv/**"
-  - "ai-projects/quantum-ml/env/**"
-  - "ai-projects/chat-cli/.venv/**"
-  - "ai-projects/chat-cli/env/**"
-  - "AI/microsoft_phi-silica-3.6_v1/.venv/**"
-  - "AI/microsoft_phi-silica-3.6_v1/env/**"
 
-  # Build artifacts
+  # Python caches and packaging artifacts
+  - "**/__pycache__/**"
+  - "**/*.pyc"
+  - "**/*.pyo"
+  - "**/*.whl"
+  - "**/*.egg-info/**"
+  - "**/.pytest_cache/**"
+  - "**/.mypy_cache/**"
+  - "**/.ruff_cache/**"
+
+  # Frontend / build artifacts
   - "**/dist/**"
   - "**/build/**"
   - "**/coverage/**"
 
-  # Test fixtures and generated code
+  # Generated and fixture content
   - "**/test_data/**"
   - "**/fixtures/**"
   - "**/generated/**"
 
-  # Binary/package artifacts (not source)
-  - "**/*.whl"
-  - "**/*.egg-info/**"
-
-  # Docs and metadata (no executable code)
-  - "**/*.md"
-  - "**/*.rst"
+  # Documentation and repository metadata
   - ".git/**"
   - "docs/**"
+  - "**/*.md"
+  - "**/*.rst"
