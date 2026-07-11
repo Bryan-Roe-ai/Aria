@@ -1,26 +1,55 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
 name: Dependabot auto-label
-on: pull_request
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
+  contents: read
   pull-requests: write
   issues: write
 
 jobs:
   dependabot:
+    name: Label Dependabot PR
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'owner/my_repo'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+
     steps:
-      - name: Dependabot metadata
+      - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
         with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Add a label for all production dependencies
-        if: steps.metadata.outputs.dependency-type == 'direct:production'
-        run: gh pr edit "$PR_URL" --add-label "production"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add metadata-driven labels
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+
+          # Always mark as dependabot-generated
+          gh pr edit "$PR_URL" --add-label "dependencies"
+
+          # direct:production | direct:development | indirect
+          if [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:production" ]]; then
+            gh pr edit "$PR_URL" --add-label "production"
+          fi
+
+          if [[ "${{ steps.metadata.outputs.dependency-type }}" == "direct:development" ]]; then
+            gh pr edit "$PR_URL" --add-label "development"
+          fi
+
+          # version-update:semver-patch | ...-minor | ...-major
+          if [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-major" ]]; then
+            gh pr edit "$PR_URL" --add-label "major"
+          fi
+
+          if [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-minor" ]]; then
+            gh pr edit "$PR_URL" --add-label "minor"
+          fi
+
+          if [[ "${{ steps.metadata.outputs.update-type }}" == "version-update:semver-patch" ]]; then
+            gh pr edit "$PR_URL" --add-label "patch"
+          fi
