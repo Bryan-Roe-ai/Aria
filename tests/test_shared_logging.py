@@ -12,21 +12,16 @@ import logging
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Reset module-level _configured flag before importing so tests are isolated.
-import importlib
 import shared.logging as shared_logging_mod
-
 from shared.logging import (
     JsonFormatter,
     configure_json_logging,
     configure_logging,
     get_logger,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
