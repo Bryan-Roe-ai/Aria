@@ -27,9 +27,9 @@ def test_codeql_c_cpp_uses_buildless_mode() -> None:
         entry for entry in workflow["jobs"]["analyze"]["strategy"]["matrix"]["include"] if entry["language"] == "c-cpp"
     )
 
-    assert (
-        c_cpp_entry["build-mode"] == "none"
-    ), "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+    assert c_cpp_entry["build-mode"] == "none", (
+        "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+    )
 
 
 @pytest.mark.unit
