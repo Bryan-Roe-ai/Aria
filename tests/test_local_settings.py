@@ -11,12 +11,9 @@ import os
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from shared.local_settings import apply_local_settings, load_local_settings
-
 
 # ---------------------------------------------------------------------------
 # Helpers

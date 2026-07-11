@@ -24,7 +24,6 @@ from shared.http_utils import (
     validate_provider_choice,
 )
 
-
 # ---------------------------------------------------------------------------
 # validate_messages — additional content edge cases
 # ---------------------------------------------------------------------------
