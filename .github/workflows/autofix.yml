@@ -125,14 +125,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Cache pip
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt', '**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Cache npm
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
@@ -142,6 +134,35 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
+      - id: changed
+        name: Compute changed files scope
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          : > .changed_files.txt
+          : > .changed_py.txt
+          : > .changed_js_like.txt
+          : > .changed_c_like.txt
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only --diff-filter=ACMRT "$BASE_SHA" "$HEAD_SHA" > .changed_files.txt || true
+          else
+            git ls-files > .changed_files.txt || true
+          fi
+
+          grep -E '\.py$' .changed_files.txt > .changed_py.txt || true
+          grep -E '\.(js|jsx|ts|tsx|mjs|cjs|json|yml|yaml|md|css|scss|html)$' .changed_files.txt > .changed_js_like.txt || true
+          grep -E '\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$' .changed_files.txt > .changed_c_like.txt || true
+
+          echo "all_count=$(wc -l < .changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "py_count=$(wc -l < .changed_py.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "js_count=$(wc -l < .changed_js_like.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "c_count=$(wc -l < .changed_c_like.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
       - name: Install autofix tooling
         shell: bash
@@ -161,9 +182,9 @@ jobs:
             npm install --global --no-fund --no-audit prettier@3
           fi
 
-          if git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' | grep -q .; then
-            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq || true
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format || true
+          if [ "${{ steps.changed.outputs.c_count }}" != "0" ]; then
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format
           fi
 
       - name: Run ruff fixes
@@ -171,26 +192,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ "${{ steps.changed.outputs.py_count }}" = "0" ]; then
+            echo "No changed Python files; skipping ruff."
+            exit 0
+          fi
+
           RUN_UNSAFE="false"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
             if [ "${{ inputs.allow_unsafe_fixes || 'false' }}" = "true" ]; then
               RUN_UNSAFE="true"
             fi
           fi
+
           if [ "$RUN_UNSAFE" = "true" ]; then
-            ruff check --fix --unsafe-fixes --exit-zero .
+            xargs -r ruff check --fix --unsafe-fixes --exit-zero < .changed_py.txt
           else
-            ruff check --fix --exit-zero .
+            xargs -r ruff check --fix --exit-zero < .changed_py.txt
           fi
-          ruff format .
+          xargs -r ruff format < .changed_py.txt
 
       - name: Run eslint fixes (if configured)
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
+          if [ "${{ steps.changed.outputs.js_count }}" = "0" ]; then
+            echo "No changed JS/TS/etc files; skipping eslint."
+            exit 0
+          fi
           if [ -f package.json ] && npx --no-install eslint --version >/dev/null 2>&1; then
-            npx eslint --fix --ext .js,.jsx,.ts,.tsx . || true
+            xargs -r npx eslint --fix --ext .js,.jsx,.ts,.tsx < .changed_js_like.txt || true
           else
             echo "eslint not available; skipping."
           fi
@@ -200,10 +231,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ "${{ steps.changed.outputs.js_count }}" = "0" ] && [ "${{ steps.changed.outputs.py_count }}" = "0" ] && [ "${{ steps.changed.outputs.c_count }}" = "0" ]; then
+            echo "No changed files in configured sets; skipping prettier."
+            exit 0
+          fi
+
           if [ -f package.json ]; then
-            npx --no-install prettier --write . --ignore-unknown || true
+            xargs -r npx --no-install prettier --write --ignore-unknown < .changed_files.txt || true
           else
-            prettier --write . --ignore-unknown || true
+            xargs -r prettier --write --ignore-unknown < .changed_files.txt || true
           fi
 
       - name: Run clang-format (C/C++)
@@ -211,9 +247,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t files < <(git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' 2>/dev/null || true)
-          if [ "${#files[@]}" -gt 0 ]; then
-            clang-format -i --style=file --fallback-style=LLVM "${files[@]}" || true
+          if [ "${{ steps.changed.outputs.c_count }}" = "0" ]; then
+            echo "No changed C/C++ files; skipping clang-format."
+            exit 0
+          fi
+          if command -v clang-format >/dev/null 2>&1; then
+            mapfile -t files < .changed_c_like.txt
+            if [ "${#files[@]}" -gt 0 ]; then
+              clang-format -i --style=file --fallback-style=LLVM "${files[@]}" || true
+            fi
+          else
+            echo "clang-format not installed; skipping."
           fi
 
       - name: Revert workflow file changes
@@ -221,6 +265,28 @@ jobs:
         run: |
           set -euo pipefail
           git restore --staged --worktree -- .github/workflows || true
+
+      - name: Verify formatter/linter state
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.changed.outputs.py_count }}" != "0" ]; then
+            xargs -r ruff check < .changed_py.txt || true
+            xargs -r ruff format --check < .changed_py.txt || true
+          fi
+
+          if [ "${{ steps.changed.outputs.js_count }}" != "0" ]; then
+            if [ -f package.json ] && npx --no-install eslint --version >/dev/null 2>&1; then
+              xargs -r npx eslint --ext .js,.jsx,.ts,.tsx < .changed_js_like.txt || true
+            fi
+            if [ -f package.json ]; then
+              xargs -r npx --no-install prettier --check --ignore-unknown < .changed_files.txt || true
+            else
+              xargs -r prettier --check --ignore-unknown < .changed_files.txt || true
+            fi
+          fi
 
       - id: diff
         name: Detect changes
@@ -269,6 +335,7 @@ jobs:
       - name: Open follow-up PR on push/schedule/manual
         if: >-
           steps.diff.outputs.changed == 'true' &&
+          github.repository == 'Bryan-Roe/Aria' &&
           (github.event_name == 'push' ||
            github.event_name == 'schedule' ||
            (github.event_name == 'workflow_dispatch' && inputs.open_autofix_pr))
@@ -286,7 +353,7 @@ jobs:
             - ruff format
             - eslint --fix (if configured)
             - prettier --write
-            - clang-format (if C/C++ files exist)
+            - clang-format (if changed C/C++ files exist)
           labels: |
             automated
             autofix
