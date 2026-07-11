@@ -44,20 +44,43 @@ def test_devcontainer_lock_json_is_valid_json() -> None:
         )
 
 
+def _assert_no_trailing_data(path: Path, content: str) -> None:
+    """Assert that *content* contains a single JSON value with only whitespace after it.
+
+    Uses ``JSONDecoder.raw_decode()`` which returns the end-position of the
+    parsed value.  Anything remaining after that position (beyond whitespace)
+    is trailing data and indicates a corrupted file.
+    """
+    decoder = json.JSONDecoder()
+    try:
+        _parsed, end_index = decoder.raw_decode(content)
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"{path.name} is not valid JSON: {exc}")
+
+    trailing = content[end_index:]
+    assert trailing.strip() == "", (
+        f"{path.name} has trailing non-whitespace data after the root JSON object "
+        f"(at offset {end_index}): {trailing!r}\n"
+        "This will cause `devcontainer build` to fail with a SyntaxError."
+    )
+
+
 def test_devcontainer_json_no_trailing_data() -> None:
     """Ensure no extra characters appear after the root JSON object in devcontainer.json."""
     config_path = _DEVCONTAINER_DIR / "devcontainer.json"
-    content = config_path.read_text(encoding="utf-8").strip()
-    parsed = json.loads(content)
-    # Re-serialise and confirm round-trip is clean (catches extra non-whitespace data)
-    assert isinstance(parsed, dict), "devcontainer.json root must be a JSON object"
+    content = config_path.read_text(encoding="utf-8")
+    _assert_no_trailing_data(config_path, content)
 
 
 def test_devcontainer_lock_json_no_trailing_data() -> None:
-    """Ensure no extra characters appear after the root JSON object in devcontainer-lock.json."""
+    """Ensure no extra characters appear after the root JSON object in devcontainer-lock.json.
+
+    Regression test for the stray ``  }`` that caused:
+        SyntaxError: Unexpected non-whitespace character after JSON at position 2143
+    in CI job 86511118286.
+    """
     lock_path = _DEVCONTAINER_DIR / "devcontainer-lock.json"
     if not lock_path.exists():
         pytest.skip("devcontainer-lock.json not present")
-    content = lock_path.read_text(encoding="utf-8").strip()
-    parsed = json.loads(content)
-    assert isinstance(parsed, dict), "devcontainer-lock.json root must be a JSON object"
+    content = lock_path.read_text(encoding="utf-8")
+    _assert_no_trailing_data(lock_path, content)
