@@ -23,5 +23,8 @@ for _name, _value in _canonical.__dict__.items():
         continue
     globals()[_name] = _value
 
+# Expose the canonical public API via __all__ so consumers can enumerate it.
+__all__ = ["load_config", "load_jobs", "validate_job", "build_command", "main"]
+
 # Mirror the canonical module so downstream monkeypatches affect one object.
 sys.modules[__name__] = _canonical
