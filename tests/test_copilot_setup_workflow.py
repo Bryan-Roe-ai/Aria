@@ -12,6 +12,13 @@ def _read_copilot_setup_workflow() -> str:
     return workflow_path.read_text(encoding="utf-8")
 
 
+def _workflow_step_by_name(steps: list[dict[str, object]], name: str) -> dict[str, object]:
+    for step in steps:
+        if step.get("name") == name:
+            return step
+    raise AssertionError(f"Expected workflow step named {name!r}")
+
+
 @pytest.mark.unit
 def test_copilot_setup_workflow_concurrency_is_ref_scoped() -> None:
     content = _read_copilot_setup_workflow()
@@ -47,9 +54,9 @@ def test_copilot_setup_workflow_hardening_contract() -> None:
     content = _read_copilot_setup_workflow()
     workflow = yaml.safe_load(content)
     setup_steps = workflow["jobs"]["validate-setup"]["steps"]
-    harden_runner_step = next(step for step in setup_steps if step.get("name") == "Harden runner")
-    setup_node_step = next(step for step in setup_steps if step.get("name") == "Setup Node")
-    setup_python_step = next(step for step in setup_steps if step.get("name") == "Setup Python")
+    harden_runner_step = _workflow_step_by_name(setup_steps, "Harden runner")
+    setup_node_step = _workflow_step_by_name(setup_steps, "Setup Node")
+    setup_python_step = _workflow_step_by_name(setup_steps, "Setup Python")
 
     assert "runs-on: ubuntu-24.04" in content
     assert "egress-policy: block" in content
@@ -72,7 +79,8 @@ def test_copilot_setup_workflow_hardening_contract() -> None:
     assert 'echo "markdownlint outcome: $MD_OUTCOME"' in content
     assert "# Requires bash 4+ for associative arrays." in content
 
-    name_idx = content.index("name:")
+    assert content.startswith("name: Copilot setup validation\n")
+    name_idx = 0
     on_idx = content.index("\non:")
     permissions_idx = content.index("\npermissions:")
     concurrency_idx = content.index("\nconcurrency:")
