@@ -59,7 +59,7 @@ dmypy.json
 # Translations
 *.mo
 *.pot
-
+/actions-runner/*
 # Framework / app artifacts
 *.log
 /local_settings.py
