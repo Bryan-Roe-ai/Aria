@@ -145,10 +145,12 @@ def test_prepare_job_skips_unlabeled_event_replays() -> None:
 
 
 def test_prepare_job_adds_autofix_label_and_marks_ready() -> None:
-    action_path = WORKFLOWS_DIR / "auto-merge.yml"
-    content = action_path.read_text(encoding="utf-8")
-    assert "labels: ['autofix']" in content, "prepare job must add the autofix label when missing"
-    assert "markPullRequestReadyForReview" in content, "prepare job must mark draft PRs ready for review"
+    wf = _load_auto_merge()
+    steps = wf["jobs"]["prepare-github-actions-pr"]["steps"]
+    script_step = next(step for step in steps if step.get("name") == "Ready PR and apply autofix label")
+    script = script_step["with"]["script"]
+    assert "labels: 'autofix'" in script, "prepare job must add the autofix label when missing"
+    assert "markPullRequestReadyForReview" in script, "prepare job must mark draft PRs ready for review"
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +244,7 @@ def test_disable_job_checks_no_remaining_label() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_bot_approve_keeps_variable_gate_for_non_github_actions_bots() -> None:
+def test_bot_approve_requires_variable_gate_for_other_bots() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["bot-approve"].get("if", "")
     assert "AUTO_MERGE_BOT_APPROVE" in job_if, "bot-approve job must still support the AUTO_MERGE_BOT_APPROVE gate"

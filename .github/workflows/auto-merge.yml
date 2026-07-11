@@ -77,7 +77,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
-                labels: ['autofix'],
+                labels: 'autofix',
               });
               core.info(`Added 'autofix' label to PR #${pr.number}.`);
             } else {
@@ -334,12 +334,13 @@ jobs:
       github.event.pull_request.draft == false &&
       (
         github.event.pull_request.user.login == 'github-actions[bot]' ||
-        vars.AUTO_MERGE_BOT_APPROVE == 'true'
-      ) &&
-      (
-        github.event.pull_request.user.login == 'github-actions[bot]' ||
-        contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
-        contains(github.event.pull_request.labels.*.name, 'autofix')
+        (
+          vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
+          (
+            contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
+            contains(github.event.pull_request.labels.*.name, 'autofix')
+          )
+        )
       )
     runs-on: ubuntu-latest
     timeout-minutes: 5
