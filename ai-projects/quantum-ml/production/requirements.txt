@@ -15,7 +15,7 @@ joblib==1.5.3
 
 # === Deep learning / ML runtime ===
 # NOTE: For CUDA-enabled servers, install the appropriate torch wheel for your CUDA version
-torch==2.12.1
+torch==2.13.0
 
 # === Quantum ML ===
 # Keep pennylane and pennylane-lightning versions compatible
