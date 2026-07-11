@@ -26,27 +26,27 @@ This document summarizes the complete Python 3.14 upgrade performed on the Aria 
 
 **Updated 20 workflow files** to use Python 3.14:
 
-| Workflow                      | Change                                                       |
+| Workflow | Change |
 | ----------------------------- | ------------------------------------------------------------ |
-| ci-pipeline.yml               | `3.11` → `3.14`                                              |
-| pr-tests.yml                  | `3.11` → `3.14`                                              |
-| ci.yml                        | `3.11` → `3.14`                                              |
-| aria-tests.yml                | `['3.10', '3.11', '3.12']` → `['3.12', '3.13', '3.14']`      |
-| e2e-tests.yml                 | `3.11` → `3.14`                                              |
-| quantum-ci.yml                | `['3.10', '3.11']` → `['3.12', '3.13', '3.14']`              |
-| nightly-regression.yml        | `3.11` → `3.14`                                              |
-| agi-smoke.yml                 | `3.11` → `3.14`                                              |
-| llm-maker-tests.yml           | `3.11` → `3.14`                                              |
-| api-health-smoke.yml          | `3.11` → `3.14`                                              |
-| gradio-focused-tests.yml      | `3.11` → `3.14`                                              |
-| integration-contract-gate.yml | `3.11` → `3.14`                                              |
-| aria-bot-tests.yml            | `3.10` → `3.14`                                              |
-| auto-fix.yml                  | `3.11` → `3.14`                                              |
-| training-health-report.yml    | `3.11` → `3.14`                                              |
-| agi-prune-cron.yml            | `3.11.x` → `3.14`                                            |
-| test-watcher.yml              | `3.11` → `3.14`                                              |
-| codeql.yml                    | (checked - no explicit version pin, will use runner default) |
-| copilot-setup-steps.yml       | (checked - no explicit version pin)                          |
+| ci-pipeline.yml | `3.11` → `3.14` |
+| pr-tests.yml | `3.11` → `3.14` |
+| ci.yml | `3.11` → `3.14` |
+| aria-tests.yml | `['3.10', '3.11', '3.12']` → `['3.12', '3.13', '3.14']` |
+| e2e-tests.yml | `3.11` → `3.14` |
+| quantum-ci.yml | `['3.10', '3.11']` → `['3.12', '3.13', '3.14']` |
+| nightly-regression.yml | `3.11` → `3.14` |
+| agi-smoke.yml | `3.11` → `3.14` |
+| llm-maker-tests.yml | `3.11` → `3.14` |
+| api-health-smoke.yml | `3.11` → `3.14` |
+| gradio-focused-tests.yml | `3.11` → `3.14` |
+| integration-contract-gate.yml | `3.11` → `3.14` |
+| aria-bot-tests.yml | `3.10` → `3.14` |
+| auto-fix.yml | `3.11` → `3.14` |
+| training-health-report.yml | `3.11` → `3.14` |
+| agi-prune-cron.yml | `3.11.x` → `3.14` |
+| test-watcher.yml | `3.11` → `3.14` |
+| codeql.yml | (checked - no explicit version pin, will use runner default) |
+| copilot-setup-steps.yml | (checked - no explicit version pin) |
 
 **Rationale for Matrix Updates**:
 
