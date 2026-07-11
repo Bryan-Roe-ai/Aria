@@ -96,7 +96,7 @@ jobs:
     strategy:
       fail-fast: false
   matrix:
-    include:
+  include:
       - language: actions
         build-mode: none
         os: ubuntu-latest
