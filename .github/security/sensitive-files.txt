@@ -1,0 +1,9 @@
+(^|/)local\.settings\.json$
+(^|/)\.env$
+(^|/)\.env\.[A-Za-z0-9_-]+$
+(^|/)secrets\.[A-Za-z0-9_-]+$
+(^|/)credentials\.[A-Za-z0-9_-]+$
+(^|/)id_rsa$
+(^|/)id_ecdsa$
+(^|/)id_ed25519$
+\.(pem|p12|pfx|key)$
