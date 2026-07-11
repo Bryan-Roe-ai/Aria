@@ -99,16 +99,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - build-mode: autobuild
+          - build-mode: manual
             language: actions
             os: ubuntu-latest
-          - build-mode: autobuild
+          - build-mode: manual
             language: javascript-typescript
             os: ubuntu-latest
-          - build-mode: autobuild
+          - build-mode: manual
             language: python
             os: ubuntu-latest
-          - build-mode: autobuild
+          - build-mode: manual
             language: c-cpp
             os: ubuntu-latest
     timeout-minutes: 360
