@@ -5,6 +5,7 @@ import runpy
 import sys
 from pathlib import Path
 
-codegen_dir = Path(__file__).parent / "tools" / "codegen"
+repo_root = Path(__file__).resolve().parents[2]
+codegen_dir = repo_root / "tools" / "codegen"
 sys.path.insert(0, str(codegen_dir))
 runpy.run_path(str(codegen_dir / "code_generation_demo.py"), run_name="__main__")
