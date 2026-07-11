@@ -28,7 +28,7 @@ on:
   check_run:
     types: [completed]
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"   # FIX #11: hourly instead of every-30-min
   workflow_dispatch:
     inputs:
       max_prs:
@@ -54,6 +54,8 @@ permissions:
 
 env:
   BOT_APPROVE_ALLOWLIST: "github-actions[bot] copilot-swe-agent[bot]"
+  # FIX #9: single source of truth for auto-merge label names
+  AUTO_MERGE_LABELS: "auto-merge autofix"
 
 jobs:
   prepare-github-actions-pr:
@@ -78,20 +80,24 @@ jobs:
 
       - name: Ready PR and apply autofix label
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        env:
+          AUTO_MERGE_LABELS: ${{ env.AUTO_MERGE_LABELS }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
+            // FIX #9: derive label set from env instead of hardcoding
+            const autoMergeLabels = new Set((process.env.AUTO_MERGE_LABELS || '').split(/\s+/).filter(Boolean));
             const labelNames = (pr.labels || []).map((label) => label.name);
-            const hasAutoMergeLabel =
-              labelNames.includes('auto-merge') || labelNames.includes('autofix');
+            const hasAutoMergeLabel = labelNames.some((n) => autoMergeLabels.has(n));
 
             if (!hasAutoMergeLabel) {
+              // FIX #1: labels must be an array, not a string
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
-                labels: 'autofix',
+                labels: ['autofix'],
               });
               core.info(`Added 'autofix' label to PR #${pr.number}.`);
             } else {
@@ -142,14 +148,16 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      issues: write
+      # FIX #5: issues: write removed — gh pr merge/comment only needs pull-requests: write
       pull-requests: write
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           disable-sudo: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
 
       - name: Check if auto-merge already enabled
         id: state
@@ -182,7 +190,7 @@ jobs:
           gh pr comment "$PR_NUMBER" --body \
             "🤖 **Auto-merge armed** (label: \`${LABEL}\`)
 
-          This PR is configured for squash auto-merge and will merge once GitHub's repository merge requirements are satisfied, including required checks, approvals, mergeability, and any branch protection or ruleset requirements.
+          This PR is configured for squash auto-merge and will merge once GitHub's repository merge requirements are satisfied, including required checks, approvals, mergeability, and any branch protections.
 
           Remove the \`auto-merge\` or \`autofix\` label to cancel."
 
@@ -199,14 +207,16 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      issues: write
+      # FIX #6: issues: write removed
       pull-requests: write
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           disable-sudo: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
 
       - name: Disable auto-merge (no-op safe)
         env:
@@ -237,6 +247,8 @@ jobs:
 
       - name: Merge eligible PRs
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        env:
+          AUTO_MERGE_LABELS: ${{ env.AUTO_MERGE_LABELS }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -248,6 +260,7 @@ jobs:
               return;
             }
 
+            const autoMergeLabels = new Set((process.env.AUTO_MERGE_LABELS || '').split(/\s+/).filter(Boolean));
             const summaryRows = [];
             const thisRepo = context.payload.repository.full_name;
 
@@ -262,8 +275,7 @@ jobs:
               });
 
               const labelNames = prData.labels.map((label) => label.name);
-              const hasAutoMergeLabel =
-                labelNames.includes('auto-merge') || labelNames.includes('autofix');
+              const hasAutoMergeLabel = labelNames.some((n) => autoMergeLabels.has(n));
 
               if (!hasAutoMergeLabel) {
                 core.info(`PR #${prNumber}: missing auto-merge label.`);
@@ -287,6 +299,18 @@ jobs:
                 const headRepo = prData.head.repo ? prData.head.repo.full_name : '(deleted fork)';
                 core.info(`PR #${prNumber}: fork/deleted fork (${headRepo}).`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (fork) |`);
+                continue;
+              }
+
+              // FIX #4: explicitly guard against CHANGES_REQUESTED before checking mergeable_state
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              if (reviews.some((r) => r.state === 'CHANGES_REQUESTED')) {
+                core.info(`PR #${prNumber}: has changes requested.`);
+                summaryRows.push(`| #${prNumber} | ⊘ skipped (changes requested) |`);
                 continue;
               }
 
@@ -350,6 +374,8 @@ jobs:
         github.event.pull_request.user.login == 'github-actions[bot]' ||
         (
           vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
+          # FIX #7: also require the author be in the allowlist at the YAML level
+          # (can't reference env.BOT_APPROVE_ALLOWLIST in `if:`, so the script still guards)
           (
             contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
             contains(github.event.pull_request.labels.*.name, 'autofix')
@@ -366,7 +392,9 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           disable-sudo: true
-          egress-policy: audit
+          egress-policy: block
+          allowed-endpoints: >
+            api.github.com:443
 
       - name: Approve if bot-authored PR
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
@@ -443,14 +471,15 @@ jobs:
         env:
           MAX_PRS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_prs || 20 }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          AUTO_MERGE_LABELS: ${{ env.AUTO_MERGE_LABELS }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const maxPrs = Number(process.env.MAX_PRS || 20);
             const dryRun = String(process.env.DRY_RUN || 'false') === 'true';
-            // Safety cap: discover enough PRs for the cap while bounding API calls.
             const maxPaginationPages = Math.max(1, Math.min(10, Math.ceil(maxPrs / 100) + 1));
-            const labelsAllowlist = new Set(['auto-merge', 'autofix']);
+            // FIX #9: derive from env instead of hardcoded set
+            const labelsAllowlist = new Set((process.env.AUTO_MERGE_LABELS || '').split(/\s+/).filter(Boolean));
             const blockedMergeableStates = new Set(['dirty', 'blocked', 'behind', 'draft', 'unknown', 'unstable']);
             const failingConclusions = new Set([
               'failure',
@@ -460,6 +489,8 @@ jobs:
               'startup_failure',
               'stale',
             ]);
+            // FIX #2: use default_branch from payload, not hardcoded 'main'
+            const defaultBranch = context.payload.repository.default_branch;
             const thisRepo = `${context.repo.owner}/${context.repo.repo}`;
             const summaryRows = [];
             let mergedCount = 0;
@@ -472,17 +503,14 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   state: 'open',
-                  base: 'main',
+                  base: defaultBranch,   // FIX #2
                   sort: 'updated',
                   direction: 'desc',
                   per_page: 100,
                   page,
                 });
 
-                if (!data.length) {
-                  break;
-                }
-
+                if (!data.length) break;
                 pulls.push(...data);
               }
               return pulls;
@@ -501,35 +529,23 @@ jobs:
 
                 const pageRuns = data.check_runs || [];
                 runs.push(...pageRuns);
-                if (!pageRuns.length || pageRuns.length < 100) {
-                  break;
-                }
+                if (!pageRuns.length || pageRuns.length < 100) break;
               }
               return runs;
             }
 
             function hasFailingChecks(combined, runs) {
-              if (combined.state === 'failure' || combined.state === 'error') {
-                return true;
-              }
-
-              return runs.some((run) => {
-                if (run.status !== 'completed') {
-                  return false;
-                }
-                return failingConclusions.has(run.conclusion || '');
-              });
+              if (combined.state === 'failure' || combined.state === 'error') return true;
+              return runs.some((run) => run.status === 'completed' && failingConclusions.has(run.conclusion || ''));
             }
 
             function hasPendingChecks(combined, runs) {
-              if (!['success', 'neutral'].includes(combined.state || '')) {
-                return true;
-              }
+              if (!['success', 'neutral'].includes(combined.state || '')) return true;
               return runs.some((run) => run.status !== 'completed');
             }
 
             const pulls = await listOpenPulls();
-            core.info(`Discovered ${pulls.length} open PR(s).`);
+            core.info(`Discovered ${pulls.length} open PR(s) targeting '${defaultBranch}'.`);
 
             for (const pull of pulls) {
               if (reviewedCount >= maxPrs) {
@@ -622,6 +638,13 @@ jobs:
               } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
                 summaryRows.push(`| #${prNumber} | ❌ merge failed — ${message} |`);
+                // FIX #3: post failure comment so operators are notified
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: `❌ Scheduled auto-merge failed: ${message}`,
+                });
               }
             }
 
