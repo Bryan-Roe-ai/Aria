@@ -363,7 +363,6 @@ jobs:
               .addHeading('Auto-Merge Results', 2)
               .addRaw(`${tableHeader}\n${tableBody}`)
               .write();
-
   bot-approve:
     name: Bot-Approve PR
     if: >-
@@ -374,14 +373,13 @@ jobs:
         github.event.pull_request.user.login == 'github-actions[bot]' ||
         (
           vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
-          # FIX #7: also require the author be in the allowlist at the YAML level
-          # (can't reference env.BOT_APPROVE_ALLOWLIST in `if:`, so the script still guards)
           (
             contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
             contains(github.event.pull_request.labels.*.name, 'autofix')
           )
         )
       )
+      
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
