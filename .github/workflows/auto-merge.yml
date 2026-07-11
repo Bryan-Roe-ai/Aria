@@ -58,11 +58,11 @@ env:
 
 jobs:
   prepare-github-actions-pr:
-    if: >-
+    # FIX 1: removed the stray empty `if: >-` line that preceded `name:`,
+    # which caused "Map keys must be unique" / "'if' is already defined".
     name: Prepare github-actions PR
     if: >-
       github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.user.login == 'github-actions[bot]' &&
       github.event.action != 'unlabeled'
     runs-on: ubuntu-latest
