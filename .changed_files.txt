@@ -1,4 +1,5 @@
 .changed_files.txt
+.changed_js_like.txt
 .changed_py.txt
 .circleci/cci-agent-setup.yml
 .circleci/config.yml
