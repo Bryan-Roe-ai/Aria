@@ -10,4 +10,6 @@ continue to work even though the filesystem uses hyphens.
 Automatically created by Copilot CLI.
 """
 
+from . import quantum_ml
+
 __all__ = ["quantum_ml"]

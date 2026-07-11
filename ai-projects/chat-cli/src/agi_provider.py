@@ -1,5 +1,5 @@
 # flake8: noqa: E501
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,broad-exception-caught
 
 """
 AGI (Artificial General Intelligence) Enhanced Chat Provider.
@@ -58,9 +58,9 @@ from typing import Any, Protocol, TypedDict, cast, runtime_checkable
 import chat_providers as _chat_providers
 
 try:
-    from quantum_agent_selector import QuantumAgentSelector
+    from quantum_agent_selector import QuantumAgentSelector  # pylint: disable=invalid-name
 except Exception:  # pragma: no cover - optional experimental module
-    QuantumAgentSelector = None  # type: ignore[assignment]
+    QuantumAgentSelector = None  # type: ignore[assignment]  # pylint: disable=invalid-name
 
 _logger = logging.getLogger(__name__)
 
@@ -92,6 +92,31 @@ class RoleMessage(TypedDict):
 
     role: str
     content: str
+
+
+class RoutingPattern(TypedDict, total=False):
+    """Learned routing pattern persisted in context.learned_patterns."""
+
+    agent: str
+    domain: str
+    intent: str
+    count: int
+    last_seen: float
+
+
+class _QuantumAgentSelectorProtocol(Protocol):
+    """Typed interface for optional quantum-assisted agent routing."""
+
+    def enabled(self) -> bool:
+        ...
+
+    def select(
+        self,
+        *,
+        candidate_scores: dict[str, float],
+        learned_agent: str | None,
+    ) -> tuple[str, dict[str, Any]]:
+        ...
 
 
 class BaseChatProvider:
@@ -131,10 +156,7 @@ def detect_provider(
     if not callable(candidate_obj):
         raise ImportError("chat_providers.detect_provider is unavailable")
 
-    candidate = cast(
-        Callable[..., tuple[BaseChatProvider, ProviderChoice]],
-        candidate_obj,
-    )
+    candidate: Callable[..., tuple[BaseChatProvider, ProviderChoice]] = candidate_obj
 
     result = candidate(
         explicit=explicit,
@@ -142,7 +164,7 @@ def detect_provider(
         temperature=temperature,
         max_output_tokens=max_output_tokens,
     )
-    return cast(tuple[BaseChatProvider, ProviderChoice], result)
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -475,6 +497,29 @@ def _sanitize_for_logging(text: str, max_length: int = 200) -> str:
     return html.escape(out)
 
 
+def _coerce_routing_pattern(value: Any) -> RoutingPattern | None:
+    """Return a typed routing-pattern dict when *value* matches the schema."""
+    if not isinstance(value, dict):
+        return None
+
+    agent = value.get("agent")
+    count = value.get("count")
+    if not isinstance(agent, str) or not isinstance(count, int):
+        return None
+
+    pattern: RoutingPattern = {"agent": agent, "count": count}
+    domain = value.get("domain")
+    if isinstance(domain, str):
+        pattern["domain"] = domain
+    intent = value.get("intent")
+    if isinstance(intent, str):
+        pattern["intent"] = intent
+    last_seen = value.get("last_seen")
+    if isinstance(last_seen, (int, float)):
+        pattern["last_seen"] = float(last_seen)
+    return pattern
+
+
 def _infer_aria_movement_tag(query: str) -> str | None:
     """Infer the best matching Aria movement tag from a user query."""
     query_lower = query.lower()
@@ -512,6 +557,22 @@ def _set_provider_temperature(provider: BaseChatProvider, temperature: float | N
         return False
 
 
+def _new_str_any_dict() -> dict[str, Any]:
+    return {}
+
+
+def _new_role_message_list() -> list[RoleMessage]:
+    return []
+
+
+def _new_reasoning_chain_list() -> list[list[ReasoningStep]]:
+    return []
+
+
+def _new_goal_list() -> list[str]:
+    return []
+
+
 @dataclass
 class ReasoningStep:
     """One step in an AGI reasoning chain.
@@ -535,7 +596,7 @@ class ReasoningStep:
     step_type: str
     content: str
     confidence: float = 1.0
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=_new_str_any_dict)
 
 
 @dataclass
@@ -564,10 +625,10 @@ class AGIContext:
         Maximum number of messages to retain.  Defaults to ``MAX_HISTORY_SIZE``.
     """
 
-    conversation_history: list[RoleMessage] = field(default_factory=list)
-    reasoning_chains: list[list[ReasoningStep]] = field(default_factory=list)
-    goals: list[str] = field(default_factory=list)
-    learned_patterns: dict[str, Any] = field(default_factory=dict)
+    conversation_history: list[RoleMessage] = field(default_factory=_new_role_message_list)
+    reasoning_chains: list[list[ReasoningStep]] = field(default_factory=_new_reasoning_chain_list)
+    goals: list[str] = field(default_factory=_new_goal_list)
+    learned_patterns: dict[str, Any] = field(default_factory=_new_str_any_dict)
     max_history: int = MAX_HISTORY_SIZE
 
     def add_message(self, message: RoleMessage) -> None:
@@ -645,6 +706,8 @@ class _AGIProviderReasoningMixin:
     reasoning_depth: int
     enable_task_decomposition: bool
     enable_chain_of_thought: bool
+    _quantum_agent_selector: _QuantumAgentSelectorProtocol | None
+    _last_quantum_agent_meta: dict[str, Any]
     _last_agent_used: str | None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -841,13 +904,13 @@ class _AGIProviderReasoningMixin:
         confidence = analysis.get("confidence", 0.5)
 
         pattern_key = f"routing_{domain}_{intent}"
-        learned = self.context.learned_patterns.get(pattern_key)
-        learned_agent = learned.get("agent") if learned else None
-        if learned:
+        learned = _coerce_routing_pattern(self.context.learned_patterns.get(pattern_key))
+        learned_agent = learned.get("agent") if learned is not None else None
+        if learned is not None:
             count = learned.get("count", 1)
             last_seen = learned.get("last_seen")
-            if last_seen:
-                age_hours = (time.time() - last_seen) / 3600.0
+            if isinstance(last_seen, (int, float)):
+                age_hours = (time.time() - float(last_seen)) / 3600.0
                 decay = 0.5 ** (age_hours / 24.0)  # 24 h half-life
             else:
                 decay = 1.0
@@ -877,13 +940,10 @@ class _AGIProviderReasoningMixin:
                 best_score = score
                 best_agent = agent_name
 
-        if (
-            getattr(self, "_quantum_agent_selector", None) is not None
-            and getattr(self._quantum_agent_selector, "enabled", lambda: False)()
-            and best_agent != "general"
-        ):
+        selector = self._quantum_agent_selector
+        if selector is not None and selector.enabled() and best_agent != "general":
             try:
-                q_agent, q_meta = self._quantum_agent_selector.select(
+                q_agent, q_meta = selector.select(
                     candidate_scores=candidate_scores,
                     learned_agent=learned_agent,
                 )
@@ -1410,7 +1470,11 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
         self.enable_task_decomposition = enable_task_decomposition
         self.reasoning_depth = min(max(1, reasoning_depth), 5)
         self.context: ContextInterface = AGIContext()
-        self._quantum_agent_selector = QuantumAgentSelector() if QuantumAgentSelector is not None else None
+        self._quantum_agent_selector = (
+            cast(_QuantumAgentSelectorProtocol, QuantumAgentSelector())
+            if QuantumAgentSelector is not None
+            else None
+        )
         self._last_quantum_agent_meta: dict[str, Any] = {}
         self._last_agent_used: str | None = None
 
@@ -1528,7 +1592,7 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
             persistence = self.persistence
             if persistence is not None:
                 try:
-                    serialized_chain = []
+                    serialized_chain: list[dict[str, Any]] = []
                     for step in reasoning_chain:
                         serialized_chain.append(
                             {
@@ -1616,7 +1680,7 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
             persistence = self.persistence
             if persistence is not None:
                 try:
-                    serialized_chain = [
+                    serialized_chain: list[dict[str, Any]] = [
                         {
                             "step_type": step.step_type,
                             "content": step.content,
@@ -1964,10 +2028,16 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
                     break
 
         # Top learned routing patterns (by observation count, routing only).
-        routing_patterns = [
-            v for v in self.context.learned_patterns.values() if isinstance(v, dict) and "agent" in v and "count" in v
-        ]
-        top_patterns = sorted(routing_patterns, key=lambda p: p.get("count", 0), reverse=True)[:5]
+        routing_patterns: list[RoutingPattern] = []
+        for value in self.context.learned_patterns.values():
+            pattern = _coerce_routing_pattern(value)
+            if pattern is not None:
+                routing_patterns.append(pattern)
+        top_patterns: list[RoutingPattern] = sorted(
+            routing_patterns,
+            key=lambda p: p.get("count", 0),
+            reverse=True,
+        )[:5]
 
         return {
             "total_reasoning_chains": len(self.context.reasoning_chains),

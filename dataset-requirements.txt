@@ -1,5 +1,6 @@
 # Additional dependencies for dataset management
 # Install with: pip install -r dataset-requirements.txt
+# cspell:ignore tqdm numpy pyarrow
 
 # Dataset downloading and processing
 datasets>=5.0.0        # Hugging Face datasets library
