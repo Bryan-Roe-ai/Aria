@@ -50,7 +50,7 @@ seaborn>=0.13.2
 
 # Vision inference dependencies
 pillow>=12.2.0
-torch>=2.13.0
+torch>=2.10.0
 numpy>=1.26.4
 
 # JSON schema validation library used by tests and cooking-ai utilities
