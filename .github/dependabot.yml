@@ -27,6 +27,7 @@ _defaults: &defaults
   pull-request-branch-name:
     separator: "-"
   versioning-strategy: "increase"
+  # target-branch: "main" # uncomment if you want explicit targeting
 
 _python_defaults: &python_defaults
   <<: *defaults
@@ -48,21 +49,16 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     <<: *defaults
-    open-pull-requests-limit: 7
+    open-pull-requests-limit: 6
     commit-message:
       prefix: "deps(actions)"
     groups:
       actions-minor-patch:
-        update-types:
-          - "minor"
-          - "patch"
-        patterns:
-          - "*"
+        update-types: ["minor", "patch"]
+        patterns: ["*"]
       actions-major:
-        update-types:
-          - "major"
-        patterns:
-          - "*"
+        update-types: ["major"]
+        patterns: ["*"]
 
   - <<: *python_defaults
     directory: "/"
@@ -71,45 +67,44 @@ updates:
       prefix: "deps(pip)"
     groups:
       pip-runtime:
-        patterns:
-          - "fastapi"
-          - "uvicorn*"
-          - "pydantic*"
-          - "sqlalchemy*"
-          - "httpx*"
+        patterns: ["fastapi", "uvicorn*", "pydantic*", "sqlalchemy*", "httpx*"]
       pip-ai-sdk:
-        patterns:
-          - "openai*"
-          - "azure-*"
-          - "langchain*"
+        patterns: ["openai*", "azure-*", "langchain*"]
       pip-dev-tools:
-        patterns:
-          - "pytest*"
-          - "ruff*"
-          - "mypy*"
-          - "black"
-          - "isort"
+        dependency-type: "development"
+        patterns: ["pytest*", "ruff*", "mypy*", "black", "isort"]
       pip-other:
-        patterns:
-          - "*"
+        patterns: ["*"]
+    # Optional: known volatile/heavy packages
+    # ignore:
+    #   - dependency-name: "torch*"
+    #     update-types: ["version-update:semver-minor", "version-update:semver-patch"]
 
   - <<: *python_defaults
     directory: "/ai-projects/quantum-ml"
     commit-message:
       prefix: "deps(quantum-ml)"
     groups:
-      quantum-ml-deps:
-        patterns:
-          - "*"
+      quantum-runtime:
+        patterns: ["numpy*", "scipy*", "pandas*", "httpx*", "pydantic*"]
+      quantum-dev-tools:
+        dependency-type: "development"
+        patterns: ["pytest*", "ruff*", "mypy*"]
+      quantum-other:
+        patterns: ["*"]
 
   - <<: *python_defaults
     directory: "/ai-projects/chat-cli"
     commit-message:
       prefix: "deps(chat-cli)"
     groups:
-      chat-cli-deps:
-        patterns:
-          - "*"
+      chat-runtime:
+        patterns: ["openai*", "azure-*", "httpx*", "pydantic*"]
+      chat-dev-tools:
+        dependency-type: "development"
+        patterns: ["pytest*", "ruff*", "mypy*"]
+      chat-other:
+        patterns: ["*"]
 
   - <<: *python_defaults
     directory: "/AI/microsoft_phi-silica-3.6_v1"
@@ -121,9 +116,10 @@ updates:
     commit-message:
       prefix: "deps(phi-lora)"
     groups:
-      phi-lora-deps:
-        patterns:
-          - "*"
+      phi-runtime:
+        patterns: ["transformers*", "datasets*", "accelerate*", "peft*", "torch*"]
+      phi-other:
+        patterns: ["*"]
 
   - <<: *python_defaults
     directory: "/notebooks"
@@ -136,5 +132,4 @@ updates:
       prefix: "deps(notebooks)"
     groups:
       notebooks-deps:
-        patterns:
-          - "*"
+        patterns: ["*"]
