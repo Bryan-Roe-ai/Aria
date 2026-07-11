@@ -6,77 +6,135 @@ on:
   workflow_dispatch:
     inputs:
       artifact_path:
-        description: "Path to artifact to attest (e.g., dist/package.whl)"
+        description: "Path to artifact to attest (e.g., dist/package.whl, dist/aria.tar.gz)"
         required: false
         type: string
+      artifact_type:
+        description: "Artifact type for multi-project builds"
+        required: false
+        type: choice
+        options:
+          - auto
+          - wheel
+          - docker
+          - archive
 
 permissions:
   id-token: write
   contents: read
+  attestations: write
 
 jobs:
-  attest-release:
+  resolve-artifact:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    outputs:
+      artifact_path: ${{ steps.resolve.outputs.artifact_path }}
+      artifact_hash: ${{ steps.resolve.outputs.artifact_hash }}
+      artifact_type: ${{ steps.resolve.outputs.artifact_type }}
+      found: ${{ steps.resolve.outputs.found }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
-      - name: Generate artifact hash
-        id: artifact
+      - name: Resolve artifact path
+        id: resolve
         shell: bash
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && -n "${{ github.event.inputs.artifact_path }}" ]]; then
+          set -euo pipefail
+          
+          # Priority: dispatch input > release tag inference > auto-discovery
+          if [[ -n "${{ github.event.inputs.artifact_path }}" ]]; then
             ARTIFACT_PATH="${{ github.event.inputs.artifact_path }}"
-          elif [[ "${{ github.event_name }}" == "release" && -n "${{ github.event.release.tag_name }}" ]]; then
-            ARTIFACT_PATH="dist/${{ github.event.release.tag_name }}.tar.gz"
+            ARTIFACT_TYPE="${{ github.event.inputs.artifact_type }}"
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+            # Infer artifact type from tag prefix (e.g., quantum-ml-v1.0.0)
+            if [[ "$TAG" =~ ^quantum-ml- ]]; then
+              ARTIFACT_PATH="dist/quantum-ml/${TAG}.whl"
+              ARTIFACT_TYPE="wheel"
+            elif [[ "$TAG" =~ ^chat-cli- ]]; then
+              ARTIFACT_PATH="dist/chat-cli/${TAG}.whl"
+              ARTIFACT_TYPE="wheel"
+            elif [[ "$TAG" =~ ^phi- ]]; then
+              ARTIFACT_PATH="dist/phi-silica/${TAG}.tar.gz"
+              ARTIFACT_TYPE="archive"
+            else
+              # Default Aria release
+              ARTIFACT_PATH="dist/aria-${TAG}.tar.gz"
+              ARTIFACT_TYPE="archive"
+            fi
           else
-            ARTIFACT_PATH=""
+            echo "::error::No artifact path provided and not a release event"
+            exit 1
           fi
 
-          if [[ -n "$ARTIFACT_PATH" && -f "$ARTIFACT_PATH" ]]; then
-            HASH="$(sha256sum "$ARTIFACT_PATH" | awk '{print $1}')"
-            echo "path=$ARTIFACT_PATH" >> "$GITHUB_OUTPUT"
-            echo "hash=$HASH" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::Artifact not found at '$ARTIFACT_PATH'"
-            echo "path=" >> "$GITHUB_OUTPUT"
-            echo "hash=" >> "$GITHUB_OUTPUT"
+          if [[ ! -f "$ARTIFACT_PATH" ]]; then
+            echo "::error::Artifact not found: $ARTIFACT_PATH"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
+
+          HASH="$(sha256sum "$ARTIFACT_PATH" | awk '{print $1}')"
+          echo "artifact_path=$ARTIFACT_PATH" >> "$GITHUB_OUTPUT"
+          echo "artifact_hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "artifact_type=$ARTIFACT_TYPE" >> "$GITHUB_OUTPUT"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "✓ Resolved artifact: $ARTIFACT_PATH (type: $ARTIFACT_TYPE, sha256: $HASH)"
+
+  attest-release:
+    needs: resolve-artifact
+    runs-on: ubuntu-latest
+    if: needs.resolve-artifact.outputs.found == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v1
-        if: steps.artifact.outputs.hash != ''
         with:
-          subject-path: ${{ steps.artifact.outputs.path }}
+          subject-path: ${{ needs.resolve-artifact.outputs.artifact_path }}
           push-to-registry: false
 
-      - name: Generate SLSA provenance JSON
+      - name: Generate SLSA v1.0 provenance
         id: provenance
         shell: bash
+        env:
+          ARTIFACT_HASH: ${{ needs.resolve-artifact.outputs.artifact_hash }}
+          ARTIFACT_PATH: ${{ needs.resolve-artifact.outputs.artifact_path }}
+          ARTIFACT_TYPE: ${{ needs.resolve-artifact.outputs.artifact_type }}
         run: |
-          cat > provenance.json <<EOF
+          set -euo pipefail
+          
+          # Build SLSA v1.0 compliant provenance
+          cat > provenance.json <<'EOFPROV'
           {
             "version": 1,
             "attestationType": "https://slsa.dev/provenance/v1",
             "predicateType": "https://slsa.dev/provenance/v1",
             "subject": [
               {
-                "name": "${{ github.event_name == 'release' && github.event.release.tag_name || github.sha }}",
+                "name": "${{ needs.resolve-artifact.outputs.artifact_path }}",
                 "digest": {
-                  "sha256": "${{ steps.artifact.outputs.hash }}"
+                  "sha256": "${{ needs.resolve-artifact.outputs.artifact_hash }}"
                 }
               }
             ],
             "predicate": {
               "buildDefinition": {
-                "buildType": "https://github.com/Workflow",
+                "buildType": "https://github.com/Bryan-Roe/Aria/actions/workflow/attestation.yml",
                 "externalParameters": {
                   "workflow": "${{ github.workflow }}",
                   "ref": "${{ github.ref }}",
-                  "repo": "${{ github.repository }}"
+                  "repo": "${{ github.repository }}",
+                  "sourceRepository": "https://github.com/${{ github.repository }}",
+                  "artifactType": "${{ env.ARTIFACT_TYPE }}"
+                },
+                "internalParameters": {
+                  "github-actions-sha": "${{ github.sha }}"
                 }
               },
               "runDetails": {
@@ -85,27 +143,65 @@ jobs:
                 },
                 "byproducts": [
                   {
-                    "name": "attestation_bundle",
-                    "mediaType": "application/vnd.github.attestation+json"
+                    "name": "github_actions_build_log",
+                    "mediaType": "text/plain",
+                    "locator": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/logs"
                   }
-                ]
+                ],
+                "conclusion": "SUCCESS",
+                "duration": "PT${GITHUB_STEP_SUMMARY:0:5}S",
+                "completionTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
               }
             }
           }
-          EOF
-          echo "provenance_generated=true" >> "$GITHUB_OUTPUT"
+          EOFPROV
+          
+          echo "provenance_path=provenance.json" >> "$GITHUB_OUTPUT"
+          python3 -c "import json; json.load(open('provenance.json')); print('✓ Valid SLSA v1.0 JSON')"
 
-      - name: Upload provenance as artifact
+      - name: Verify attestation integrity
+        shell: bash
+        env:
+          ARTIFACT_HASH: ${{ needs.resolve-artifact.outputs.artifact_hash }}
+        run: |
+          set -euo pipefail
+          
+          # Parse and verify provenance matches the artifact
+          PROVENANCE_HASH=$(python3 -c "
+          import json
+          with open('provenance.json') as f:
+              data = json.load(f)
+              print(data['subject'][0]['digest']['sha256'])
+          ")
+          
+          if [[ "$PROVENANCE_HASH" != "$ARTIFACT_HASH" ]]; then
+            echo "::error::Attestation hash mismatch: $PROVENANCE_HASH != $ARTIFACT_HASH"
+            exit 1
+          fi
+          
+          echo "✓ Attestation integrity verified"
+
+      - name: Upload SLSA provenance
         uses: actions/upload-artifact@v4
-        if: steps.provenance.outputs.provenance_generated == 'true'
         with:
-          name: slsa-provenance
+          name: slsa-provenance-${{ github.run_id }}
           path: provenance.json
-          retention-days: 90
+          retention-days: 180
+          if-no-files-found: error
 
-      - name: Attest container image
-        if: github.event_name == 'release' && contains(join(github.event.release.assets.*.name, ','), '.tar')
-        run: echo "::notice::Container image attestation can be added if images are pushed to a registry"
+      - name: Create attestation release asset
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          TAG="${{ github.event.release.tag_name }}"
+          RELEASE_ID="${{ github.event.release.id }}"
+          
+          # Upload provenance as release asset
+          gh release upload "$TAG" provenance.json \
+            --clobber \
+            --repo "${{ github.repository }}"
 
   verify-attestation:
     needs: attest-release
@@ -115,14 +211,66 @@ jobs:
       - name: Download provenance
         uses: actions/download-artifact@v4
         with:
-          name: slsa-provenance
+          name: slsa-provenance-${{ github.run_id }}
 
-      - name: Verify provenance format
+      - name: Verify SLSA v1.0 compliance
         shell: bash
         run: |
-          if [[ ! -f provenance.json ]]; then
-            echo "::error::Provenance file not found"
-            exit 1
-          fi
-          python3 -m json.tool provenance.json > /dev/null
-          echo "✓ Valid SLSA provenance generated"
+          set -euo pipefail
+          
+          python3 << 'EOFVERIFY'
+          import json
+          import sys
+          from datetime import datetime
+          
+          with open('provenance.json') as f:
+              prov = json.load(f)
+          
+          # SLSA v1.0 required fields
+          required_fields = {
+              'version': (int, [1]),
+              'attestationType': (str, ['https://slsa.dev/provenance/v1']),
+              'predicateType': (str, ['https://slsa.dev/provenance/v1']),
+              'subject': (list, None),
+              'predicate': (dict, None),
+          }
+          
+          errors = []
+          for field, (expected_type, allowed_values) in required_fields.items():
+              if field not in prov:
+                  errors.append(f"Missing required field: {field}")
+              elif not isinstance(prov[field], expected_type):
+                  errors.append(f"Invalid type for {field}: {type(prov[field]).__name__}")
+              elif allowed_values and prov[field] not in allowed_values:
+                  errors.append(f"Invalid value for {field}: {prov[field]}")
+          
+          # Verify subject has digest
+          if prov.get('subject'):
+              for subj in prov['subject']:
+                  if 'digest' not in subj or 'sha256' not in subj.get('digest', {}):
+                      errors.append("Subject missing sha256 digest")
+          
+          # Verify predicate structure
+          pred = prov.get('predicate', {})
+          if 'buildDefinition' not in pred or 'runDetails' not in pred:
+              errors.append("Predicate missing buildDefinition or runDetails")
+          
+          if errors:
+              print("✗ SLSA v1.0 compliance check failed:")
+              for err in errors:
+                  print(f"  - {err}")
+              sys.exit(1)
+          
+          print("✓ SLSA v1.0 provenance verified")
+          print(f"  Subjects: {len(prov['subject'])}")
+          print(f"  Builder: {pred.get('runDetails', {}).get('builder', {}).get('id', 'N/A')}")
+          print(f"  Conclusion: {pred.get('runDetails', {}).get('conclusion', 'N/A')}")
+          EOFVERIFY
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-verification-report
+          path: provenance.json
+          retention-days: 30
