@@ -1,4 +1,4 @@
-name: "CodeQL config"
+name: "Hardened CodeQL"
 
 queries:
   - uses: security-extended
@@ -9,3 +9,4 @@ paths-ignore:
   - vendor
   - dist
   - build
+  - coverage
