@@ -1,0 +1,286 @@
+name: "Autofix (PR changed files)"
+
+on:
+  pull_request:
+    branches: ["main"]
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+    paths:
+      - "**/*.py"
+      - "**/*.{js,jsx,ts,tsx,mjs,cjs,json,yml,yaml,md,css,scss,html}"
+      - "**/*.{c,cc,cpp,cxx,h,hh,hpp,hxx}"
+      - "package.json"
+      - "package-lock.json"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - ".ruff.toml"
+      - "ruff.toml"
+      - ".eslintrc*"
+      - "eslint.config.*"
+      - ".prettierrc*"
+      - ".prettierignore"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: autofix-pr-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autofix:
+    if: ${{ !github.event.pull_request.draft }}
+    name: Autofix PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          disable-sudo: false
+          egress-policy: audit
+
+      - id: ref
+        name: Determine checkout ref
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "ref=$PR_HEAD_SHA"
+            echo "push_ref=$PR_HEAD_REF"
+            echo "repo=$PR_HEAD_REPO"
+            if [ "$PR_HEAD_REPO" = "$REPOSITORY" ]; then
+              echo "can_push=true"
+            else
+              echo "can_push=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+          ref: ${{ steps.ref.outputs.ref }}
+          repository: ${{ steps.ref.outputs.repo }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "20"
+
+      - name: Cache npm
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
+        with:
+          path: |
+            ~/.npm
+            ~/.cache
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - id: changed
+        name: Compute changed files scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          : > .changed_files.txt
+          : > .changed_py.txt
+          : > .changed_js_like.txt
+          : > .changed_c_like.txt
+
+          git diff --name-only --diff-filter=ACMRT "$BASE_SHA" "$HEAD_SHA" > .changed_files.txt || true
+
+          grep -E '\.py$' .changed_files.txt > .changed_py.txt || true
+          grep -E '\.(js|jsx|ts|tsx|mjs|cjs|json|yml|yaml|md|css|scss|html)$' .changed_files.txt > .changed_js_like.txt || true
+          grep -E '\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$' .changed_files.txt > .changed_c_like.txt || true
+
+          echo "all_count=$(wc -l < .changed_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "py_count=$(wc -l < .changed_py.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "js_count=$(wc -l < .changed_js_like.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "c_count=$(wc -l < .changed_c_like.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Install autofix tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install "ruff>=0.6,<1.0"
+
+          if [ -f package.json ]; then
+            if [ -f package-lock.json ]; then
+              npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+            else
+              npm install --no-audit --no-fund
+            fi
+            npx --no-install prettier --version >/dev/null 2>&1 || npm install --no-audit --no-fund --no-save prettier@3
+          else
+            npm install --global --no-fund --no-audit prettier@3
+          fi
+
+          if [ "${{ steps.changed.outputs.c_count }}" != "0" ]; then
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format
+          fi
+
+      - name: Log tool versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python --version
+          node --version
+          npm --version
+          ruff --version
+          if [ -f package.json ]; then
+            npx --no-install prettier --version || true
+            npx --no-install eslint --version || true
+          else
+            prettier --version || true
+          fi
+
+      - name: Run ruff fixes
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.changed.outputs.py_count }}" = "0" ]; then
+            echo "No changed Python files; skipping ruff."
+            exit 0
+          fi
+          xargs -r ruff check --fix --exit-zero < .changed_py.txt
+          xargs -r ruff format < .changed_py.txt
+
+      - name: Run eslint fixes (if configured)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.changed.outputs.js_count }}" = "0" ]; then
+            echo "No changed JS/TS/etc files; skipping eslint."
+            exit 0
+          fi
+          if [ -f package.json ] && npx --no-install eslint --version >/dev/null 2>&1; then
+            xargs -r npx eslint --fix --ext .js,.jsx,.ts,.tsx < .changed_js_like.txt || true
+          else
+            echo "eslint not available; skipping."
+          fi
+
+      - name: Run prettier write
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.changed.outputs.all_count }}" = "0" ]; then
+            echo "No changed files; skipping prettier."
+            exit 0
+          fi
+
+          if [ -f package.json ]; then
+            xargs -r npx --no-install prettier --write --ignore-unknown < .changed_files.txt || true
+          else
+            xargs -r prettier --write --ignore-unknown < .changed_files.txt || true
+          fi
+
+      - name: Run clang-format (C/C++)
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.changed.outputs.c_count }}" = "0" ]; then
+            echo "No changed C/C++ files; skipping clang-format."
+            exit 0
+          fi
+          if command -v clang-format >/dev/null 2>&1; then
+            mapfile -t files < .changed_c_like.txt
+            if [ "${#files[@]}" -gt 0 ]; then
+              clang-format -i --style=file --fallback-style=LLVM "${files[@]}" || true
+            fi
+          else
+            echo "clang-format not installed; skipping."
+          fi
+
+      - name: Revert workflow file changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git restore --staged --worktree -- .github/workflows || true
+
+      - name: Verify formatter/linter state
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.changed.outputs.py_count }}" != "0" ]; then
+            xargs -r ruff check < .changed_py.txt || true
+            xargs -r ruff format --check < .changed_py.txt || true
+          fi
+
+          if [ "${{ steps.changed.outputs.js_count }}" != "0" ]; then
+            if [ -f package.json ] && npx --no-install eslint --version >/dev/null 2>&1; then
+              xargs -r npx eslint --ext .js,.jsx,.ts,.tsx < .changed_js_like.txt || true
+            fi
+            if [ -f package.json ]; then
+              xargs -r npx --no-install prettier --check --ignore-unknown < .changed_files.txt || true
+            else
+              xargs -r prettier --check --ignore-unknown < .changed_files.txt || true
+            fi
+          fi
+
+      - id: diff
+        name: Detect changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet --exit-code; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff --stat
+          fi
+
+      - name: Commit and push fixes to same-repo PR branch
+        if: steps.diff.outputs.changed == 'true' && steps.ref.outputs.can_push == 'true'
+        env:
+          PUSH_REF: ${{ steps.ref.outputs.push_ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "ci(style): apply automated autofixes (ruff/eslint/prettier/clang-format)" || echo "No commit created"
+          if git ls-remote --heads origin "$PUSH_REF" | grep -q .; then
+            git push origin "HEAD:$PUSH_REF"
+          else
+            echo "PR branch '$PUSH_REF' no longer exists; skipping push."
+          fi
+
+      - name: Create patch for fork PR
+        if: steps.diff.outputs.changed == 'true' && steps.ref.outputs.can_push == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff > autofix.patch || true
+
+      - name: Upload patch artifact for fork PR
+        if: steps.diff.outputs.changed == 'true' && steps.ref.outputs.can_push == 'false'
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: autofix-patch
+          path: autofix.patch
+          retention-days: 14
