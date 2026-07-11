@@ -41,7 +41,6 @@ env:
   CODEQL_ACTION_SHA: 4e828ff8d448a8a6e532957b1811f387a63867e8
   CREATE_PR_SHA: 67ccf781d68cd99b580ae25a5c18a1cc84ffff1f
   DEPENDENCY_REVIEW_SHA: da24556b548a50705dd671f47852072ea4c105d9
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
   RUFF_VERSION: '>=0.6,<1.0'
   SETUP_NODE_SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -65,14 +64,13 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8
+        uses: github/codeql-action/init@v3
         with:
           build-mode: ${{ matrix.build-mode }}
           config-file: ./.github/codeql/codeql-config.yml
@@ -80,7 +78,7 @@ jobs:
 
       - id: analyze
         name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@4e828ff8d448a8a6e532957b1811f387a63867e8
+        uses: github/codeql-action/analyze@v3
         with:
           category: '/language:${{ matrix.language }}'
           output: ${{ runner.temp }}/sarif-${{ matrix.language }}
@@ -89,7 +87,7 @@ jobs:
 
       - if: always()
         name: Upload SARIF as artifact (debug / archival)
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        uses: actions/upload-artifact@v4
         with:
           if-no-files-found: warn
           name: codeql-sarif-${{ matrix.language }}
@@ -97,20 +95,23 @@ jobs:
           retention-days: 30
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - build-mode: none
-            language: actions
-            os: ubuntu-latest
-          - build-mode: none
-            language: javascript-typescript
-            os: ubuntu-latest
-          - build-mode: none
-            language: python
-            os: ubuntu-latest
-          - build-mode: manual
-            language: c-cpp
-            os: ubuntu-latest
+  matrix:
+    include:
+      - language: actions
+        build-mode: none
+        os: ubuntu-latest
+
+      - language: javascript-typescript
+        build-mode: none
+        os: ubuntu-latest
+
+      - language: python
+        build-mode: none
+        os: ubuntu-latest
+
+      - language: c-cpp
+        build-mode: autobuild
+        os: ubuntu-latest
     timeout-minutes: 360
 
   autofix:
@@ -166,7 +167,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: true
@@ -182,7 +183,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '24'
+          node-version: '22'
 
       - name: Cache pip
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
@@ -347,7 +348,7 @@ jobs:
 
       - if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && steps.ref.outputs.can_push == 'false'
         name: Upload patch artifact
-        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        uses: actions/upload-artifact@v4
         with:
           name: autofix-patch
           path: autofix.patch
@@ -355,7 +356,7 @@ jobs:
 
       - if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && steps.ref.outputs.can_push == 'false'
         name: Comment patch link on fork PR
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@v7
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -556,7 +557,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
