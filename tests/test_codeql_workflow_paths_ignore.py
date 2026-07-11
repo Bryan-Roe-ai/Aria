@@ -10,7 +10,10 @@ import yaml
 def _load_workflow(workflow_name: str) -> dict:
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / workflow_name
     assert workflow_path.exists(), f"Expected workflow to exist: {workflow_name}"
-    return yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+    if True in workflow and "on" not in workflow:
+        workflow["on"] = workflow.pop(True)
+    return workflow
 
 
 @pytest.mark.unit
@@ -40,14 +43,14 @@ def test_legacy_codeql_workflow_matches_canonical_codeql_action_refs() -> None:
     legacy_workflow = _load_workflow("CodeQL Analysis.yml")
 
     canonical_uses = {
-        step["name"]: step["uses"]
+        step["name"]: step.get("uses")
         for step in canonical_workflow["jobs"]["analyze"]["steps"]
-        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"}
+        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"} and step.get("uses")
     }
     legacy_uses = {
-        step["name"]: step["uses"]
+        step["name"]: step.get("uses")
         for step in legacy_workflow["jobs"]["analyze"]["steps"]
-        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"}
+        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"} and step.get("uses")
     }
 
     assert legacy_uses == canonical_uses, (
