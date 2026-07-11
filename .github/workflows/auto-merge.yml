@@ -363,6 +363,7 @@ jobs:
               .addHeading('Auto-Merge Results', 2)
               .addRaw(`${tableHeader}\n${tableBody}`)
               .write();
+
   bot-approve:
     name: Bot-Approve PR
     if: >-
@@ -374,12 +375,16 @@ jobs:
         (
           vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
           (
+            github.event.pull_request.user.login == 'github-actions[bot]' ||
+            github.event.pull_request.user.login == 'copilot-swe-agent[bot]'
+          ) &&
+          (
             contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
             contains(github.event.pull_request.labels.*.name, 'autofix')
           )
         )
       )
-      
+
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
