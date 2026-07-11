@@ -101,6 +101,6 @@ def test_codeql_config_has_document_start_and_no_trailing_whitespace() -> None:
     content = config_path.read_text(encoding="utf-8")
 
     assert content.startswith("---\n"), "CodeQL config must keep its YAML document start marker."
-    assert all(
-        line == line.rstrip() for line in content.splitlines()
-    ), "CodeQL config should not contain trailing whitespace."
+    assert all(line == line.rstrip() for line in content.splitlines()), (
+        "CodeQL config should not contain trailing whitespace."
+    )
