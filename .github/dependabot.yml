@@ -11,7 +11,7 @@ _defaults: &defaults
   assignees:
     - "Bryan-Roe"
   reviewers:
-    - "Bryan-Roe" # or team slug if desired
+    - "Bryan-Roe"
   allow:
     - dependency-type: "direct"
     - dependency-type: "indirect"
@@ -26,9 +26,25 @@ _defaults: &defaults
     include: "scope"
   pull-request-branch-name:
     separator: "-"
+  versioning-strategy: "increase"
+
+_python_defaults: &python_defaults
+  <<: *defaults
+  package-ecosystem: "pip"
+  ignore:
+    - dependency-name: "*"
+      update-types:
+        - "version-update:semver-major"
+  exclude-paths:
+    - ".venv/**"
+    - "venv/**"
+    - "**/__pycache__/**"
+    - "**/.ipynb_checkpoints/**"
+    - "build/**"
+    - "dist/**"
+    - "vendor/**"
 
 updates:
-  # GitHub Actions (keep frequent)
   - package-ecosystem: "github-actions"
     directory: "/"
     <<: *defaults
@@ -48,17 +64,11 @@ updates:
         patterns:
           - "*"
 
-  # Root Python deps (critical)
-  - package-ecosystem: "pip"
+  - <<: *python_defaults
     directory: "/"
-    <<: *defaults
     open-pull-requests-limit: 7
     commit-message:
       prefix: "deps(pip)"
-    ignore:
-      - dependency-name: "*"
-        update-types:
-          - "version-update:semver-major"
     groups:
       pip-runtime:
         patterns:
@@ -83,10 +93,40 @@ updates:
         patterns:
           - "*"
 
-  # Low-risk/experimental subtree: weekly
-  - package-ecosystem: "pip"
+  - <<: *python_defaults
+    directory: "/ai-projects/quantum-ml"
+    commit-message:
+      prefix: "deps(quantum-ml)"
+    groups:
+      quantum-ml-deps:
+        patterns:
+          - "*"
+
+  - <<: *python_defaults
+    directory: "/ai-projects/chat-cli"
+    commit-message:
+      prefix: "deps(chat-cli)"
+    groups:
+      chat-cli-deps:
+        patterns:
+          - "*"
+
+  - <<: *python_defaults
+    directory: "/AI/microsoft_phi-silica-3.6_v1"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "deps(phi-lora)"
+    groups:
+      phi-lora-deps:
+        patterns:
+          - "*"
+
+  - <<: *python_defaults
     directory: "/notebooks"
-    <<: *defaults
     schedule:
       interval: "weekly"
       day: "sunday"
