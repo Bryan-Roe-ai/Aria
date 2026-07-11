@@ -100,7 +100,7 @@ jobs:
             esac
 
             case "$file" in
-              */node_modules/*|node_modules/*|*/.venv/*|.venv/*|*/venv/*|venv/*|*/.git/*|.git/*|*/dist/*|dist/*|*/build/*|build/*|*/.next/*|.next/*|*/.cache/*|.cache/*|data_out/*|mount/*|*/CHANGELOG.md|CHANGELOG.md)
+              */node_modules/*|node_modules/*|*/.venv/*|.venv/*|*/venv/*|venv/*|*/.git/*|.git/*|*/dist/*|dist/*|*/build/*|build/*|*/.next/*|.next/*|*/.cache/*|.cache/*|data_out/*|mount/*|docs/root-guides/*|*/CHANGELOG.md|CHANGELOG.md)
                 return 1
                 ;;
             esac
