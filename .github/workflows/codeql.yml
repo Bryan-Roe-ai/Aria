@@ -99,13 +99,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - build-mode: manual
+          - build-mode: none
             language: actions
             os: ubuntu-latest
-          - build-mode: manual
+          - build-mode: none
             language: javascript-typescript
             os: ubuntu-latest
-          - build-mode: manual
+          - build-mode: none
             language: python
             os: ubuntu-latest
           - build-mode: manual
