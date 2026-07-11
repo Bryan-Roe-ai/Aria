@@ -1044,6 +1044,11 @@ class TestAgiEndpoints:
         assert data["provider"]["base_provider"] == "azure"
         assert data["provider"]["base_model"] == "gpt-4o"
         assert data["reasoning"]["total_reasoning_chains"] == 3
+        assert "quantum_agent_selection" in data
+        assert isinstance(data["quantum_agent_selection"], dict)
+        assert "enabled" in data["quantum_agent_selection"]
+        assert "selector" in data["quantum_agent_selection"]
+        assert "last_decision" in data["quantum_agent_selection"]
         agent_tools = data.get("agent_tools") or {}
         lmstudio_tools = set(agent_tools.get("lmstudio-specialist") or [])
         assert {
@@ -1165,6 +1170,37 @@ class TestAgiEndpoints:
 # ===========================================================================
 # Quantum LLM endpoint tests — /api/quantum/llm
 # ===========================================================================
+    def test_agi_quantum_debug_endpoint(self, app_module, monkeypatch):
+        class _FakeAgiProvider:
+            def __init__(self):
+                class _Selector:
+                    def enabled(self):
+                        return True
+                    def get_metrics(self):
+                        return {"total_calls": 3, "quantum_calls": 2}
+                self._quantum_agent_selector = _Selector()
+                self._last_quantum_agent_meta = {"mode": "quantum", "backend": "simulator"}
+                self.base_provider = None
+
+        monkeypatch.setattr(
+            app_module,
+            "create_agi_provider",
+            lambda **kwargs: (_FakeAgiProvider(), types.SimpleNamespace(name="agi", model="agi-local")),
+        )
+
+        req = _mock_request("GET")
+        resp = app_module.agi_quantum_debug(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+        assert "quantum_selector" in data
+        assert data["quantum_selector"]["enabled"] is True
+        assert "metrics" in data["quantum_selector"]
+        assert data["quantum_selector"]["metrics"]["total_calls"] == 3
+        assert data["quantum_selector"]["last_decision"]["mode"] == "quantum"
+
+
 class TestQuantumLlmEndpoint:
     """Coverage for GET/POST branches of the quantum LLM endpoint."""
 

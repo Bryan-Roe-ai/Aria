@@ -432,6 +432,36 @@ class AGIMultiAgentTests(unittest.TestCase):
         self.assertEqual(agent, "general")
         self.assertEqual(score, 0.0)
 
+
+    def test_quantum_selector_can_override_when_enabled(self) -> None:
+        class _FakeSelector:
+            def enabled(self):
+                return True
+            def select(self, *, candidate_scores, learned_agent=None):
+                if candidate_scores.get("code-specialist", 0.0) > 0:
+                    return "code-specialist", {"mode": "quantum", "backend": "simulator", "latency_ms": 1.0}
+                best = max(candidate_scores, key=candidate_scores.get)
+                return best, {"mode": "quantum", "backend": "simulator", "latency_ms": 1.0}
+
+        self.agi._quantum_agent_selector = _FakeSelector()
+        analysis = {"intent": "coding", "domain": "technical", "confidence": 0.9}
+        agent, score = self.agi._select_agent(analysis)
+        self.assertEqual(agent, "code-specialist")
+        self.assertGreater(score, 0.0)
+
+    def test_quantum_selector_exception_falls_back(self) -> None:
+        class _BrokenSelector:
+            def enabled(self):
+                return True
+            def select(self, *, candidate_scores, learned_agent=None):
+                raise RuntimeError("boom")
+
+        self.agi._quantum_agent_selector = _BrokenSelector()
+        analysis = {"intent": "explanation", "domain": "quantum", "confidence": 0.8}
+        agent, score = self.agi._select_agent(analysis)
+        self.assertEqual(agent, "quantum-specialist")
+        self.assertGreater(score, 0.0)
+
     def test_dispatch_agi_agent_returns_none(self) -> None:
         """Dispatching to 'general' (provider=agi) must return None so AGI handles it."""
         result = self.agi._dispatch_to_agent("hello", "general", {})

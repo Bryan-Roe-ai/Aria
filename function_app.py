@@ -978,6 +978,10 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
 def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
     return agi_domain.agi_persistence(req, _build_domain_context())
 
+@app.route(route="agi/quantum-debug", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_quantum_debug(req: func.HttpRequest) -> func.HttpResponse:
+    return agi_domain.agi_quantum_debug(req, _build_domain_context())
+
 
 @app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def chat(req: func.HttpRequest) -> func.HttpResponse:
@@ -2921,6 +2925,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/agi/reason",
             "/api/agi/stream",
             "/api/agi/status",
+            "/api/agi/quantum-debug",
             "/api/agi/persistence",
             "/api/aria/state",
             "/api/aria/execute",
@@ -3006,6 +3011,7 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "authLevel": "anonymous",
             },
             {"route": "agi/status", "methods": ["GET"], "authLevel": "anonymous"},
+{"route": "agi/quantum-debug", "methods": ["GET"], "authLevel": "anonymous"},
             {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/stream", "methods": ["POST"], "authLevel": "anonymous"},

@@ -26,6 +26,7 @@ def agi_analyze(req, ctx):
             "query": query,
             "analysis": analysis,
             "routing": {"selected_agent": selected_agent, "agent_score": float(agent_score)},
+            "quantum_routing": getattr(provider, "_last_quantum_agent_meta", {}) if provider is not None else {},
             "provider": ctx._agi_provider_metadata(provider, provider_choice),
         }
         return ctx.func.HttpResponse(
@@ -78,9 +79,31 @@ def agi_status(req, ctx):
             "available_agents": [],
         }
         available = ctx.create_agi_provider is not None
+        quantum_agent_selection = {
+            "enabled": False,
+            "selector": {},
+            "last_decision": {},
+        }
         if available:
             provider, provider_choice = ctx._create_agi_provider_for_api()
             summary = provider.get_reasoning_summary()
+            selector = getattr(provider, "_quantum_agent_selector", None)
+            selector_enabled = False
+            selector_metrics = {}
+            if selector is not None:
+                try:
+                    selector_enabled = bool(getattr(selector, "enabled", lambda: False)())
+                except Exception:
+                    selector_enabled = False
+                try:
+                    selector_metrics = dict(getattr(selector, "get_metrics", lambda: {})() or {})
+                except Exception:
+                    selector_metrics = {}
+            quantum_agent_selection = {
+                "enabled": selector_enabled,
+                "selector": selector_metrics,
+                "last_decision": getattr(provider, "_last_quantum_agent_meta", {}) or {},
+            }
 
         try:
             from agi_provider import _AGENT_REGISTRY
@@ -105,6 +128,7 @@ def agi_status(req, ctx):
             "available": available,
             "provider": provider_meta,
             "reasoning": summary,
+            "quantum_agent_selection": quantum_agent_selection,
             "agent_tools": agent_tools,
             "backends": ctx.build_agi_backend_status(provider),
             "endpoints": [
@@ -112,6 +136,7 @@ def agi_status(req, ctx):
                 "/api/agi/reason",
                 "/api/agi/stream",
                 "/api/agi/status",
+                "/api/agi/quantum-debug",
                 "/api/agi/persistence",
             ],
         }
@@ -123,6 +148,64 @@ def agi_status(req, ctx):
         )
     except Exception as exc:
         ctx.logging.error("agi/status error: %s", exc)
+        return ctx.func.HttpResponse(
+            ctx.json.dumps({"status": "error", "error": str(exc)}),
+            status_code=500,
+            mimetype="application/json",
+            headers=ctx.create_cors_response_headers(),
+        )
+
+
+def agi_quantum_debug(req, ctx):
+    unauthorized = require_access(req, ctx, "agi")
+    if unauthorized is not None:
+        return unauthorized
+
+    try:
+        available = ctx.create_agi_provider is not None
+        payload = {
+            "status": "ok",
+            "available": available,
+            "quantum_selector": {
+                "enabled": False,
+                "metrics": {},
+                "last_decision": {},
+            },
+        }
+
+        if available:
+            provider, provider_choice = ctx._create_agi_provider_for_api(
+                verbose=bool((req.params or {}).get("verbose", "false").lower() == "true")
+            )
+            selector = getattr(provider, "_quantum_agent_selector", None)
+
+            selector_enabled = False
+            selector_metrics = {}
+            if selector is not None:
+                try:
+                    selector_enabled = bool(getattr(selector, "enabled", lambda: False)())
+                except Exception:
+                    selector_enabled = False
+                try:
+                    selector_metrics = dict(getattr(selector, "get_metrics", lambda: {})() or {})
+                except Exception:
+                    selector_metrics = {}
+
+            payload["provider"] = ctx._agi_provider_metadata(provider, provider_choice)
+            payload["quantum_selector"] = {
+                "enabled": selector_enabled,
+                "metrics": selector_metrics,
+                "last_decision": getattr(provider, "_last_quantum_agent_meta", {}) or {},
+            }
+
+        return ctx.func.HttpResponse(
+            ctx.json.dumps(payload),
+            status_code=200,
+            mimetype="application/json",
+            headers=ctx.create_cors_response_headers(),
+        )
+    except Exception as exc:
+        ctx.logging.error("agi/quantum-debug error: %s", exc)
         return ctx.func.HttpResponse(
             ctx.json.dumps({"status": "error", "error": str(exc)}),
             status_code=500,

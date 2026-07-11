@@ -57,6 +57,11 @@ from typing import Any, Protocol, TypedDict, cast, runtime_checkable
 
 import chat_providers as _chat_providers
 
+try:
+    from quantum_agent_selector import QuantumAgentSelector
+except Exception:  # pragma: no cover - optional experimental module
+    QuantumAgentSelector = None  # type: ignore[assignment]
+
 _logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -824,22 +829,17 @@ class _AGIProviderReasoningMixin:
         """Select the best specialist agent based on query analysis.
 
         Scores each non-fallback agent by domain match, intent match, and a
-        confidence-weighted boost factor.  Also incorporates previously learned
-        routing patterns stored in ``context.learned_patterns`` to reinforce
-        successful agent assignments for the same domain+intent signature.
+        confidence-weighted boost factor. Also incorporates previously learned
+        routing patterns stored in ``context.learned_patterns``.
 
-        A time-decay factor is applied to the learned-pattern bonus so that
-        stale observations contribute progressively less weight.  The half-life
-        is 24 hours: ``decay = 0.5 ** (age_hours / 24)``.
-
-        Returns a ``(agent_name, score)`` tuple where *score* is the winning
-        match score (0.0 for the general fallback).
+        Optionally applies a quantum-assisted selector (feature-flagged) as a
+        final override. Any selector failure safely falls back to classical
+        routing.
         """
         intent = analysis.get("intent", "general")
         domain = analysis.get("domain", "general")
         confidence = analysis.get("confidence", 0.5)
 
-        # Retrieve past routing pattern for this domain+intent, if any.
         pattern_key = f"routing_{domain}_{intent}"
         learned = self.context.learned_patterns.get(pattern_key)
         learned_agent = learned.get("agent") if learned else None
@@ -857,6 +857,7 @@ class _AGIProviderReasoningMixin:
 
         best_agent = "general"
         best_score = 0.0
+        candidate_scores: dict[str, float] = {}
 
         for agent_name, agent_config in _AGENT_REGISTRY.items():
             if agent_name == "general":
@@ -866,24 +867,41 @@ class _AGIProviderReasoningMixin:
                 score += 0.5
             if intent in agent_config.get("intents", []):
                 score += 0.3
-            # Only apply confidence boost when there is at least one domain or
-            # intent match — prevents pure-boost wins on general queries.
             if score > 0.0:
                 score += agent_config.get("confidence_boost", 0.0) * confidence
-                # Learned pattern bonus for agents that previously handled this signature.
                 if agent_name == learned_agent:
                     score += learned_weight
+
+            candidate_scores[agent_name] = score
             if score > best_score:
                 best_score = score
                 best_agent = agent_name
 
+        if (
+            getattr(self, "_quantum_agent_selector", None) is not None
+            and getattr(self._quantum_agent_selector, "enabled", lambda: False)()
+            and best_agent != "general"
+        ):
+            try:
+                q_agent, q_meta = self._quantum_agent_selector.select(
+                    candidate_scores=candidate_scores,
+                    learned_agent=learned_agent,
+                )
+                self._last_quantum_agent_meta = q_meta
+                if q_agent in candidate_scores and candidate_scores.get(q_agent, 0.0) > 0.0:
+                    best_agent = q_agent
+                    best_score = candidate_scores[q_agent]
+            except Exception as exc:  # pragma: no cover
+                self._last_quantum_agent_meta = {"mode": "fallback", "reason": "exception", "error": str(exc)}
+
         _logger.debug(
-            "Agent selected: %s (score=%.3f, domain=%s, intent=%s, learned=%s)",
+            "Agent selected: %s (score=%.3f, domain=%s, intent=%s, learned=%s, quantum=%s)",
             best_agent,
             best_score,
             domain,
             intent,
             learned_agent,
+            getattr(self, "_last_quantum_agent_meta", {}).get("mode", "off"),
         )
         return best_agent, best_score
 
@@ -1392,6 +1410,8 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
         self.enable_task_decomposition = enable_task_decomposition
         self.reasoning_depth = min(max(1, reasoning_depth), 5)
         self.context: ContextInterface = AGIContext()
+        self._quantum_agent_selector = QuantumAgentSelector() if QuantumAgentSelector is not None else None
+        self._last_quantum_agent_meta: dict[str, Any] = {}
         self._last_agent_used: str | None = None
 
     @property
