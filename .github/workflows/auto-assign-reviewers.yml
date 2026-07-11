@@ -73,6 +73,11 @@ jobs:
             const users = new Set();
             const teams = new Set(); // store as {org}/{team}
 
+            // Hard denylist for bot/service accounts that must never be review-requested.
+            const denylistedReviewers = new Set([
+              'github-actions[bot]',
+            ]);
+
             const candidatePaths = ['.github/CODEOWNERS', 'CODEOWNERS', 'docs/CODEOWNERS'];
             let codeownersText = null;
             for (const path of candidatePaths) {
@@ -121,7 +126,8 @@ jobs:
                 login.endsWith('[bot]') ||
                 login.endsWith('-bot') ||
                 login.includes('dependabot') ||
-                login.includes('bors')
+                login.includes('bors') ||
+                denylistedReviewers.has(login)
               );
             }
 
