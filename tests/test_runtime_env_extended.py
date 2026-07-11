@@ -16,8 +16,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from shared.runtime_env import (
@@ -26,7 +24,6 @@ from shared.runtime_env import (
     locate_project_python,
     probe_python_packages,
 )
-
 
 # ---------------------------------------------------------------------------
 # _candidate_venv_python_paths

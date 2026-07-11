@@ -6,17 +6,13 @@ provides full coverage of its public behaviour.
 
 from __future__ import annotations
 
-import json
 import sys
 import time
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from shared.json_utils import load_status_json, save_json
-
+from shared.json_utils import load_status_json
 
 # ---------------------------------------------------------------------------
 # Metadata keys always present

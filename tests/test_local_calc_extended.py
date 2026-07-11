@@ -18,10 +18,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pytest
 
 from shared.local_calc import evaluate_arithmetic, looks_like_arithmetic, normalize_expression
-
 
 # ---------------------------------------------------------------------------
 # Unicode operators

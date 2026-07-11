@@ -17,7 +17,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from shared.local_summary import is_summary_request, normalize_text, summarize_text
 
-
 # ---------------------------------------------------------------------------
 # is_summary_request — all hint words
 # ---------------------------------------------------------------------------
@@ -122,11 +121,7 @@ class TestSummarizeTextPrefixStripping:
 
 class TestSummarizeTextMaxSentences:
     def test_max_sentences_one(self):
-        text = (
-            "First sentence introduces the topic. "
-            "Second sentence provides details. "
-            "Third sentence wraps up."
-        )
+        text = "First sentence introduces the topic. Second sentence provides details. Third sentence wraps up."
         summary = summarize_text(text, max_sentences=1)
         # At most one sentence — count terminal punctuation occurrences
         sentence_enders = sum(1 for ch in summary if ch in ".!?")
