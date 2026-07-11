@@ -7,12 +7,15 @@ import pytest
 import yaml
 
 
+def _load_workflow(workflow_name: str) -> dict:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / workflow_name
+    assert workflow_path.exists(), f"Expected workflow to exist: {workflow_name}"
+    return yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+
 @pytest.mark.unit
 def test_codeql_workflow_ignores_issue_template_changes() -> None:
-    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
-    assert workflow_path.exists(), "Expected CodeQL workflow to exist"
-
-    workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    workflow = _load_workflow("codeql.yml")
 
     assert ".github/ISSUE_TEMPLATE/**" in workflow["on"]["push"]["paths-ignore"]
     assert ".github/ISSUE_TEMPLATE/**" in workflow["on"]["pull_request"]["paths-ignore"]
@@ -20,8 +23,7 @@ def test_codeql_workflow_ignores_issue_template_changes() -> None:
 
 @pytest.mark.unit
 def test_codeql_c_cpp_uses_buildless_mode() -> None:
-    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
-    workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+    workflow = _load_workflow("codeql.yml")
 
     c_cpp_entry = next(
         entry for entry in workflow["jobs"]["analyze"]["strategy"]["matrix"]["include"] if entry["language"] == "c-cpp"
@@ -29,6 +31,28 @@ def test_codeql_c_cpp_uses_buildless_mode() -> None:
 
     assert c_cpp_entry["build-mode"] == "none", (
         "The c-cpp CodeQL lane must stay buildless so it does not invoke the repo root Makefile via autobuild."
+    )
+
+
+@pytest.mark.unit
+def test_legacy_codeql_workflow_matches_canonical_codeql_action_refs() -> None:
+    canonical_workflow = _load_workflow("codeql.yml")
+    legacy_workflow = _load_workflow("CodeQL Analysis.yml")
+
+    canonical_uses = {
+        step["name"]: step["uses"]
+        for step in canonical_workflow["jobs"]["analyze"]["steps"]
+        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"}
+    }
+    legacy_uses = {
+        step["name"]: step["uses"]
+        for step in legacy_workflow["jobs"]["analyze"]["steps"]
+        if step.get("name") in {"Initialize CodeQL", "Perform CodeQL Analysis"}
+    }
+
+    assert legacy_uses == canonical_uses, (
+        "Legacy CodeQL Analysis workflow must use the same CodeQL action refs as codeql.yml so "
+        "the c-cpp lane stays buildless instead of falling back to autobuild."
     )
 
 
