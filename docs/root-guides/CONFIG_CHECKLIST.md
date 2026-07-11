@@ -114,19 +114,19 @@ curl http://localhost:7071/api/ai/routes | python3 -m json.tool
 
 ## 📦 Dependency Summary
 
-| Category          | Key Package                   | Min Version |
+| Category | Key Package | Min Version |
 | ----------------- | ----------------------------- | ----------- |
-| **AI/Chat**       | `openai`                      | 1.58.0      |
-| **Quantum**       | `qiskit`                      | 1.3.0       |
-| **Quantum ML**    | `qiskit-machine-learning`     | 0.8.2       |
-| **Azure Quantum** | `azure-quantum`               | 1.0.0       |
-| **Deep Learning** | `torch`                       | 2.8.0       |
-| **Transformers**  | `transformers`                | Latest      |
-| **Fine-tuning**   | `peft`                        | Latest      |
-| **Functions**     | `azure-functions`             | Latest      |
-| **Database**      | `sqlalchemy`                  | 2.0.36      |
-| **Cosmos**        | `azure-cosmos`                | 4.7.0       |
-| **Telemetry**     | `azure-monitor-opentelemetry` | 1.0.0       |
+| **AI/Chat** | `openai` | 1.58.0 |
+| **Quantum** | `qiskit` | 1.3.0 |
+| **Quantum ML** | `qiskit-machine-learning` | 0.8.2 |
+| **Azure Quantum** | `azure-quantum` | 1.0.0 |
+| **Deep Learning** | `torch` | 2.8.0 |
+| **Transformers** | `transformers` | Latest |
+| **Fine-tuning** | `peft` | Latest |
+| **Functions** | `azure-functions` | Latest |
+| **Database** | `sqlalchemy` | 2.0.36 |
+| **Cosmos** | `azure-cosmos` | 4.7.0 |
+| **Telemetry** | `azure-monitor-opentelemetry` | 1.0.0 |
 
 ---
 
@@ -223,14 +223,14 @@ See `ENVIRONMENT_SETUP.md` for:
 
 ## 🆘 Quick Troubleshooting
 
-| Problem                       | Fix                                      |
+| Problem | Fix |
 | ----------------------------- | ---------------------------------------- |
-| `ModuleNotFoundError: torch`  | `pip install torch>=2.8.0`               |
-| `ModuleNotFoundError: qiskit` | `pip install qiskit==1.3.0`              |
-| `ModuleNotFoundError: openai` | `pip install openai>=1.58.0`             |
-| Provider returns "local"      | Check `/api/ai/status` for env vars      |
-| `/api/chat` returns 500       | Run `/api/ai/provider-probe` to diagnose |
-| Functions fail to start       | `pip install azure-functions`            |
+| `ModuleNotFoundError: torch` | `pip install torch>=2.8.0` |
+| `ModuleNotFoundError: qiskit` | `pip install qiskit==1.3.0` |
+| `ModuleNotFoundError: openai` | `pip install openai>=1.58.0` |
+| Provider returns "local" | Check `/api/ai/status` for env vars |
+| `/api/chat` returns 500 | Run `/api/ai/provider-probe` to diagnose |
+| Functions fail to start | `pip install azure-functions` |
 
 ---
 
