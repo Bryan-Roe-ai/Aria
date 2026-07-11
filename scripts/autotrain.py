@@ -46,6 +46,8 @@ HF_TRAIN_SCRIPT = (
 __all__ = ["load_config", "load_jobs", "validate_job", "build_command", "main"]
 
 
+__all__ = ["load_config", "load_jobs", "validate_job", "build_command", "main"]
+
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
