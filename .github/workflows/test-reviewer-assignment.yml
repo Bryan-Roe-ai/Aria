@@ -1,0 +1,17 @@
+name: Test reviewer assignment helpers
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/auto-assign-reviewers.yml"
+      - "tools/reviewer-assignment/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+      - run: node --test tools/reviewer-assignment/**/*.test.js
