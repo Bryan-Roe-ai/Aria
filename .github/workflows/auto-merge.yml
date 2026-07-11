@@ -22,43 +22,43 @@
 
 name: Auto Merge
 
-on:
+on:  # yamllint disable-line rule:truthy
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
   check_run:
     types: [completed]
   schedule:
-    - cron: "0 * * * *"   # FIX #11: hourly instead of every-30-min
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       max_prs:
         description: "Maximum eligible PRs to process this run"
         required: false
+        default: "20"
         type: number
-        default: 20
       dry_run:
         description: "Evaluate eligibility without merging"
         required: false
-        type: boolean
         default: false
+        type: boolean
 
 concurrency:
+  cancel-in-progress: false
   group: >-
     auto-merge-${{
       github.event.pull_request.number || github.event.check_run.id || github.run_id
     }}
-  cancel-in-progress: false
 
 permissions:
   contents: read
 
 env:
-  BOT_APPROVE_ALLOWLIST: "github-actions[bot] copilot-swe-agent[bot]"
-  # FIX #9: single source of truth for auto-merge label names
   AUTO_MERGE_LABELS: "auto-merge autofix"
+  BOT_APPROVE_ALLOWLIST: "github-actions[bot] copilot-swe-agent[bot]"
 
 jobs:
   prepare-github-actions-pr:
+    if: >-
     name: Prepare github-actions PR
     if: >-
       github.event_name == 'pull_request' &&
