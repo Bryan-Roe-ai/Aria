@@ -11,10 +11,7 @@ import importlib.util
 import sys
 from pathlib import Path
 
-_CANONICAL = (
-    Path(__file__).resolve().parent
-    / "ai-projects" / "chat-cli" / "src" / "chat_providers.py"
-)
+_CANONICAL = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src" / "chat_providers.py"
 
 _spec = importlib.util.spec_from_file_location(
     "_canonical_chat_providers_root",
@@ -31,6 +28,8 @@ for _name, _value in _mod.__dict__.items():
     if _name.startswith("__"):
         continue
     globals()[_name] = _value
+
+__all__ = [_n for _n in _mod.__dict__ if not _n.startswith("_")]
 
 # Make this module a direct alias to the canonical implementation so
 # monkeypatching attributes (e.g., AzureOpenAI) updates the globals used by
