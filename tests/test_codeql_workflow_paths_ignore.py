@@ -33,6 +33,26 @@ def test_codeql_c_cpp_uses_buildless_mode() -> None:
 
 
 @pytest.mark.unit
+def test_codeql_workflow_pins_buildless_capable_codeql_actions() -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    workflow = yaml.load(workflow_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    init_step = next(step for step in workflow["jobs"]["analyze"]["steps"] if step["name"] == "Initialize CodeQL")
+    analyze_step = next(
+        step for step in workflow["jobs"]["analyze"]["steps"] if step["name"] == "Perform CodeQL Analysis"
+    )
+
+    expected_init = "github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8"
+    expected_analyze = "github/codeql-action/analyze@4e828ff8d448a8a6e532957b1811f387a63867e8"
+
+    assert init_step["uses"] == expected_init, (
+        "The c-cpp buildless lane requires a CodeQL action release that supports build-mode none; do not downgrade "
+        "init back to v3."
+    )
+    assert analyze_step["uses"] == expected_analyze
+
+
+@pytest.mark.unit
 def test_codeql_autofix_ref_step_avoids_unbound_shell_vars() -> None:
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
     content = workflow_path.read_text(encoding="utf-8")
