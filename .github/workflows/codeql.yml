@@ -4,7 +4,7 @@
 #
 # Tuned for MAXIMUM security signal with INTEGRATED AUTOFIX:
 #   - All repo languages covered (Python, JS/TS, GitHub Actions; C/C++ via
-#     manual build when present). HTML is analyzed as part of
+#     buildless analysis). HTML is analyzed as part of
 #     javascript-typescript.
 #   - Query packs: security-extended + security-and-quality + experimental
 #     security queries, plus community security packs (when available).
@@ -118,7 +118,7 @@ jobs:
             os: ubuntu-latest
 
           - language: c-cpp
-            build-mode: autobuild
+            build-mode: none
             os: ubuntu-latest
             timeout-minutes: 360
     timeout-minutes: 360
